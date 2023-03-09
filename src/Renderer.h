@@ -1,4 +1,5 @@
 #pragma once
+#include <util/Sse3.h>
 #include <cstdint>
 class Renderer
 {

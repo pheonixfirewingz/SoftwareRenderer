@@ -1,5 +1,5 @@
 #include "Renderer.h"
-#include "util/Sse3.h"
+#include "render/Ray.hpp"
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -18,7 +18,8 @@ Renderer::Renderer(int width, int height)
 
 void Renderer::clearScreen(uint8_t a, uint8_t r, uint8_t g, uint8_t b)
 {
-    __m128i xmm_val = _mm_set1_epi32((r << 24) + (g << 16) + (b << 8) + (a << 0));
+    uint32_t colour = (uint32_t)(r << 24) + (uint32_t)(g << 16) + (uint32_t)(b << 8) + (uint32_t)(a << 0);
+    __m128i xmm_val = _mm_set1_epi32(colour);
     for (size_t i = 0; i < internal_width * internal_height; i += 4)
         _mm_store_si128((__m128i *)(screen_data + i), xmm_val);
 }
