@@ -1,0 +1,1 @@
+valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes ./build/linux-x64-debug/software_renderer
