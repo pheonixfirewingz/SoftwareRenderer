@@ -26,13 +26,7 @@ protected:
 	const unsigned int* render(int, int) final override
 	{
 		renderer->clearScreen(255,0,55,55);
-		
-		/*for (int y = 0; y <= height; y++) {
-			for (int x = 0; x <= width; x++)
-			{
-				screen_data[y + x] = formatToRGBA(255,rand() % 255, rand() % 255, rand() % 255);
-			}
-		}*/
+		renderer->render();
 		return renderer->getScreenData();
 	}
 
