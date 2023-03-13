@@ -1,5 +1,5 @@
 #include "Renderer.h"
-#include "render/Ray.hpp"
+#include <render/Ray.hpp>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -32,11 +32,11 @@ void Renderer::resizeScreen(int width, int height)
 
 void Renderer::render()
 {
+    cam.update();
     for (int32_t j = internal_height - 1; j >= 0; --j)
     {
         for (uint32_t i = 0; i < internal_width; ++i)
         {
-            screen_data[i + j] = (55 << 24) + (55 << 16) + (55 << 8) + (255 << 0);
         }
         std::cout << '\n';
     }

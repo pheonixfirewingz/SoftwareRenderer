@@ -34,7 +34,7 @@ template<typename T> struct HitInfomation
     Vector3<T> normal;
     bool front_face;
 
-    void setNormals(const ray &r, const Vector3<T> &outward_normal)
+    void setNormals(const Ray<T> &r, const Vector3<T> &outward_normal)
     {
         front_face = dot<T>(r.direction(), outward_normal) < 0;
         normal = front_face ? outward_normal : -outward_normal;
@@ -43,5 +43,5 @@ template<typename T> struct HitInfomation
 
 template<typename T> struct HitObject
 {
-    virtual bool didHit(const Ray<T> &ray, const T min, const T max, HitInfomation &hit_info) const = 0;
+    virtual bool didHit(const Ray<T> &ray, const T min, const T max, HitInfomation<T> &hit_info) const = 0;
 };

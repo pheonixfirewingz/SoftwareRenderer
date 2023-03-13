@@ -52,6 +52,7 @@ App::App(int width, int height, const char *title)
     gladLoaderLoadGL();
     glfwSwapInterval(1);
     resize(nullptr, width, height);
+    active_channel = this;
 }
 
 void App::run()
@@ -80,8 +81,14 @@ void App::run()
 
 App::~App()
 {
+    active_channel = nullptr;
     gladLoaderUnloadGL();
     glfwDestroyWindow(static_cast<GLFWwindow *>(window));
     glfwTerminate();
     exit(EXIT_SUCCESS);
+}
+
+bool App::IsKeyDown(unsigned short key) const noexcept
+{
+    return bool(glfwGetKey(static_cast<GLFWwindow*>(window),key) == GLFW_PRESS);
 }
