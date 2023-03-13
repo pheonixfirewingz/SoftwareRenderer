@@ -7,7 +7,6 @@ class Renderer
     uint32_t* screen_data;
     uint32_t internal_width;
     uint32_t internal_height;
-    Camera<double> cam;
     public:
     Renderer(int width, int height);
     ~Renderer();

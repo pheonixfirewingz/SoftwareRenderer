@@ -6,7 +6,8 @@
 class TestApp : public App
 {
 	Renderer *renderer;
-public:
+    Camera<double> cam;
+  public:
 	TestApp(int width, int height,const char* title) : App(width,height,title){
 		run();
 	}
@@ -25,6 +26,7 @@ protected:
 
 	const unsigned int* render(int, int) final override
 	{
+        cam.update(this);
 		renderer->clearScreen(255,0,55,55);
 		renderer->render();
 		return renderer->getScreenData();

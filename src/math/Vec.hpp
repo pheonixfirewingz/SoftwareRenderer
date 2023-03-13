@@ -4,6 +4,7 @@
 
 template<typename T> class Vector2
 {
+  protected:
     T x_, y_;
 
   public:
@@ -29,6 +30,16 @@ template<typename T> class Vector2
         return y_;
     }
 
+    void addX(T v) noexcept
+    {
+        x_ += v;
+    }
+
+    void addY(T v) noexcept
+    {
+        y_ += v;
+    }
+
     Vector2 operator-() const
     {
         return Vector2(-x_, -y_);
@@ -48,17 +59,17 @@ template<typename T> class Vector2
         return *this;
     }
 
-    Vector2 &operator/=(const double t)
+    Vector2 &operator/=(const T t)
     {
         return *this *= 1 / t;
     }
 
-    double length() const
+    T length() const
     {
         return std::sqrt(length_squared());
     }
 
-    double length_squared() const
+    T length_squared() const
     {
         return x_ * x_ + y_ * y_;
     }
@@ -69,61 +80,61 @@ template<typename T> class Vector2
         return (std::fabs(x_) < s) && (std::fabs(y_) < s);
     }
 
-    friend inline Vector2 random()
+    friend Vector2<T> operator+(const Vector2<T> &u, const Vector2<T> &v)
     {
-        return Vector2(T(rand()), T(rand()));
+        return Vector2<T>(u.x_ + v.x_, u.y_ + v.y_);
     }
 
-    friend inline Vector2 random(double min, double max)
+    friend Vector2<T> operator-(const Vector2<T> &u, const Vector2<T> &v)
     {
-        return Vector2(min + T(rand()) % (max - min + 1), min + T(rand()) % (max - min + 1));
+        return Vector2<T>(u.x_ - v.x_, u.y_ - v.y_);
+    }
+
+    friend Vector2<T> operator*(const Vector2<T> &u, const Vector2<T> &v)
+    {
+        return Vector2<T>(u.x_ * v.x_, u.y_ * v.y_);
+    }
+
+    friend Vector2<T> operator/(const Vector2<T> &u, const Vector2<T> &v)
+    {
+        return Vector2<T>(u.x_ / v.x_, u.y_ / v.y_);
+    }
+
+    friend Vector2<T> operator*(T t, const Vector2<T> &v)
+    {
+        return Vector2<T>(t * v.x_, t * v.y_);
+    }
+
+    friend Vector2<T> operator*(const Vector2<T> &v, T t)
+    {
+        return t * v;
+    }
+
+    friend Vector2<T> operator/(Vector2<T> v, T t)
+    {
+        return (1 / t) * v;
+    }
+
+    friend T dot(const Vector2<T> &u, const Vector2<T> &v)
+    {
+        return u.x_ * v.x_ + u.y_ * v.y_ + u.z_ * v.z_;
+    }
+
+    friend Vector2<T> unit_vector(Vector2<T> v)
+    {
+        return v / v.length();
+    }
+
+    friend Vector2<T> reflect(const Vector2<T> &v, const Vector2<T> &n)
+    {
+        return v - 2 * dot(v, n) * n;
+    }
+
+    friend Vector2<T> pow(const Vector2<T> &v, const Vector2<T> &n)
+    {
+        return Vector2<T>(std::pow(v.x_, n.x_), std::pow(v.y_, n.y_));
     }
 };
-
-template<typename T> inline Vector2<T> operator+(const Vector2<T> &u, const Vector2<T> &v)
-{
-    return Vector2<T>(u.x_ + v.x_, u.y_ + v.y_);
-}
-
-template<typename T> inline Vector2<T> operator-(const Vector2<T> &u, const Vector2<T> &v)
-{
-    return Vector2<T>(u.x_ - v.x_, u.y_ - v.y_);
-}
-
-template<typename T> inline Vector2<T> operator*(const Vector2<T> &u, const Vector2<T> &v)
-{
-    return Vector2<T>(u.x_ * v.x_, u.y_ * v.y_);
-}
-
-template<typename T> inline Vector2<T> operator*(T t, const Vector2<T> &v)
-{
-    return Vector2<T>(t * v.x_, t * v.y_);
-}
-
-template<typename T> inline Vector2<T> operator*(const Vector2<T> &v, T t)
-{
-    return t * v;
-}
-
-template<typename T> inline Vector2<T> operator/(Vector2<T> v, T t)
-{
-    return (1 / t) * v;
-}
-
-template<typename T> inline T dot(const Vector2<T> &u, const Vector2<T> &v)
-{
-    return u.x_ * v.x_ + u.y_ * v.y_ + u.z_ * v.z_;
-}
-
-template<typename T> inline Vector2<T> unit_vector(Vector2<T> v)
-{
-    return v / v.length();
-}
-
-template<typename T> inline Vector2<T> reflect(const Vector2<T> &v, const Vector2<T> &n)
-{
-    return v - 2 * dot(v, n) * n;
-}
 
 template<typename T> class Vector3
 {
@@ -159,6 +170,21 @@ template<typename T> class Vector3
         return z_;
     }
 
+    void addX(T v) noexcept
+    {
+        x_ += v;
+    }
+
+    void addY(T v) noexcept
+    {
+        y_ += v;
+    }
+
+    void addZ(T v) noexcept
+    {
+        z_ += v;
+    }
+
     Vector3<T> operator-() const
     {
         return Vector3<T>(-x_, -y_, -z_);
@@ -180,17 +206,17 @@ template<typename T> class Vector3
         return *this;
     }
 
-    Vector3<T> &operator/=(const double t)
+    Vector3<T> &operator/=(const T t)
     {
         return *this *= 1 / t;
     }
 
-    double length() const
+    T length() const
     {
         return std::sqrt(length_squared());
     }
 
-    double length_squared() const
+    T length_squared() const
     {
         return x_ * x_ + y_ * y_ + z_ * z_;
     }
@@ -201,62 +227,61 @@ template<typename T> class Vector3
         return (std::fabs(x_) < s) && (std::fabs(y_) < s) && (std::fabs(z_) < s);
     }
 
-    friend inline Vector3<T> random()
+    friend Vector3<T> operator+(const Vector3<T> &u, const Vector3<T> &v)
     {
-        return Vector3<T>(T(rand()), T(rand()), T(rand()));
+        return Vector3<T>(u.x_ + v.x_, u.y_ + v.y_, u.z_ + v.z_);
     }
 
-    friend inline Vector3<T> random(double min, double max)
+    friend Vector3<T> operator-(const Vector3<T> &u, const Vector3<T> &v)
     {
-        return Vector3<T>(min + T(rand()) % (max - min + 1), min + T(rand()) % (max - min + 1),
-                          min + T(rand()) % (max - min + 1));
+        return Vector3<T>(u.x_ - v.x_, u.y_ - v.y_, u.z_ - v.z_);
+    }
+
+    friend Vector3<T> operator*(const Vector3<T> &u, const Vector3<T> &v)
+    {
+        return Vector3<T>(u.x_ * v.x_, u.y_ * v.y_, u.z_ * v.z_);
+    }
+
+    friend Vector3<T> operator/(const Vector3<T> &u, const Vector3<T> &v)
+    {
+        return Vector3<T>(u.x_ / v.x_, u.y_ / v.y_, u.z_ / v.z_);
+    }
+
+    friend Vector3<T> operator*(T t, const Vector3<T> &v)
+    {
+        return Vector3<T>(t * v.x_, t * v.y_, t * v.z_);
+    }
+
+    friend Vector3<T> operator*(const Vector3<T> &v, T t)
+    {
+        return t * v;
+    }
+
+    friend Vector3<T> operator/(Vector3<T> v, T t)
+    {
+        return (1 / t) * v;
+    }
+
+    friend T dot(const Vector3<T> &u, const Vector3<T> &v)
+    {
+        return u.x_ * v.x_ + u.y_ * v.y_ + u.z_ * v.z_;
+    }
+
+    friend Vector3<T> unit_vector(Vector3<T> v)
+    {
+        return v / v.length();
+    }
+
+    friend Vector3<T> reflect(const Vector3<T> &v, const Vector3<T> &n)
+    {
+        return v - 2 * dot(v, n) * n;
+    }
+
+    friend Vector3<T> pow(const Vector3<T> &v, const Vector3<T> &n)
+    {
+        return Vector3<T>(std::pow(v.x_, n.x_), std::pow(v.y_, n.y_), std::pow(v.z_, n.z_));
     }
 };
-
-template<typename T> inline Vector3<T> operator+(const Vector3<T> &u, const Vector3<T> &v)
-{
-    return Vector3<T>(u.x_ + v.x_, u.y_ + v.y_, u.z_ + v.z_);
-}
-
-template<typename T> inline Vector3<T> operator-(const Vector3<T> &u, const Vector3<T> &v)
-{
-    return Vector3<T>(u.x_ - v.x_, u.y_ - v.y_, u.z_ - v.z_);
-}
-
-template<typename T> inline Vector3<T> operator*(const Vector3<T> &u, const Vector3<T> &v)
-{
-    return Vector3<T>(u.x_ * v.x_, u.y_ * v.y_, u.z_ * v.z_);
-}
-
-template<typename T> inline Vector3<T> operator*(T t, const Vector3<T> &v)
-{
-    return Vector3<T>(t * v.x_, t * v.y_, t * v.z_);
-}
-
-template<typename T> inline Vector3<T> operator*(const Vector3<T> &v, T t)
-{
-    return t * v;
-}
-
-template<typename T> inline Vector3<T> operator/(Vector3<T> v, T t)
-{
-    return (1 / t) * v;
-}
-
-template<typename T> inline T dot(const Vector3<T> &u, const Vector3<T> &v)
-{
-    return u.x_ * v.x_ + u.y_ * v.y_ + u.z_ * v.z_;
-}
-
-template<typename T> inline Vector3<T> unit_vector(Vector3<T> v)
-{
-    return v / v.length();
-}
-
-template<typename T> inline Vector3<T> reflect(const Vector3<T> &v, const Vector3<T> &n)
-{
-    return v - 2 * dot(v, n) * n;
-}
 
 template<typename T> class Vector4
 {
@@ -299,6 +324,26 @@ template<typename T> class Vector4
         return w_;
     }
 
+    void addX(T v) noexcept
+    {
+        x_ += v;
+    }
+
+    void addY(T v) noexcept
+    {
+        y_ += v;
+    }
+
+    void addZ(T v) noexcept
+    {
+        z_ += v;
+    }
+
+    void addW(T v) noexcept
+    {
+        w_ += v;
+    }
+
     Vector4<T> operator-() const
     {
         return Vector4<T>(-x_, -y_, -z_, -w_);
@@ -322,17 +367,17 @@ template<typename T> class Vector4
         return *this;
     }
 
-    Vector4<T> &operator/=(const double t)
+    Vector4<T> &operator/=(const T t)
     {
         return *this *= 1 / t;
     }
 
-    double length() const
+    T length() const
     {
         return std::sqrt(length_squared());
     }
 
-    double length_squared() const
+    T length_squared() const
     {
         return x_ * x_ + y_ * y_ + z_ * z_ + w_ * w_;
     }
@@ -343,59 +388,58 @@ template<typename T> class Vector4
         return (std::fabs(x_) < s) && (std::fabs(y_) < s) && (std::fabs(z_) < s) && (std::fabs(w_) < s);
     }
 
-    static Vector4<T> random()
+    friend Vector4<T> operator+(const Vector4<T> &u, const Vector4<T> &v)
     {
-        return Vector4<T>(T(rand()), T(rand()), T(rand()), T(rand()));
+        return Vector4<T>(u.x_ + v.x_, u.y_ + v.y_, u.z_ + v.z_, u.w_ + v.w_);
     }
 
-    static Vector4<T> random(double min, double max)
+    friend Vector4<T> operator-(const Vector4<T> &u, const Vector4<T> &v)
     {
-        return Vector4<T>(min + T(rand()) % (max - min + 1), min + T(rand()) % (max - min + 1),
-                          min + T(rand()) % (max - min + 1), min + T(rand()) % (max - min + 1));
+        return Vector4<T>(u.x_ - v.x_, u.y_ - v.y_, u.z_ - v.z_, u.w_ - v.w_);
+    }
+
+    friend Vector4<T> operator*(const Vector4<T> &u, const Vector4<T> &v)
+    {
+        return Vector4<T>(u.x_ * v.x_, u.y_ * v.y_, u.z_ * v.z_, u.w_ * v.w_);
+    }
+
+    friend Vector4<T> operator/(const Vector4<T> &u, const Vector4<T> &v)
+    {
+        return Vector4<T>(u.x_ / v.x_, u.y_ / v.y_, u.z_ / v.z_, u.w_ / v.w_);
+    }
+
+    friend Vector4<T> operator*(T t, const Vector4<T> &v)
+    {
+        return Vector4<T>(t * v.x_, t * v.y_, t * v.z_, t * v.w_);
+    }
+
+    friend Vector4<T> operator*(const Vector4<T> &v, T t)
+    {
+        return t * v;
+    }
+
+    friend Vector4<T> operator/(Vector4<T> v, T t)
+    {
+        return (1 / t) * v;
+    }
+
+    friend T dot(const Vector4<T> &u, const Vector4<T> &v)
+    {
+        return u.x_ * v.x_ + u.y_ * v.y_ + u.z_ * v.z_ + u.w_ * v.w_;
+    }
+
+    friend Vector4<T> unit_vector(Vector4<T> v)
+    {
+        return v / v.length();
+    }
+
+    friend Vector4<T> reflect(const Vector4<T> &v, const Vector4<T> &n)
+    {
+        return v - 2 * dot(v, n) * n;
+    }
+
+    friend Vector4<T> pow(const Vector4<T> &v, const Vector4<T> &n)
+    {
+        return Vector4<T>(std::pow(v.x_, n.x_), std::pow(v.y_, n.y_), std::pow(v.z_, n.z_), std::pow(v.w_, n.w_));
     }
 };
-
-template<typename T> inline Vector4<T> operator+(const Vector4<T> &u, const Vector4<T> &v)
-{
-    return Vector4<T>(u.x_ + v.x_, u.y_ + v.y_, u.z_ + v.z_, u.w_ + v.w_);
-}
-
-template<typename T> inline Vector4<T> operator-(const Vector4<T> &u, const Vector4<T> &v)
-{
-    return Vector4<T>(u.x_ - v.x_, u.y_ - v.y_, u.z_ - v.z_, u.w_ - v.w_);
-}
-
-template<typename T> inline Vector4<T> operator*(const Vector4<T> &u, const Vector4<T> &v)
-{
-    return Vector4<T>(u.x_ * v.x_, u.y_ * v.y_, u.z_ * v.z_, u.w_ * v.w_);
-}
-
-template<typename T> inline Vector4<T> operator*(T t, const Vector4<T> &v)
-{
-    return Vector4<T>(t * v.x_, t * v.y_, t * v.z_, t * v.w_);
-}
-
-template<typename T> inline Vector4<T> operator*(const Vector4<T> &v, T t)
-{
-    return t * v;
-}
-
-template<typename T> inline Vector4<T> operator/(Vector4<T> v, T t)
-{
-    return (1 / t) * v;
-}
-
-template<typename T> inline T dot(const Vector4<T> &u, const Vector4<T> &v)
-{
-    return u.x_ * v.x_ + u.y_ * v.y_ + u.z_ * v.z_ + u.w_ * v.w_;
-}
-
-template<typename T> inline Vector4<T> unit_vector(Vector4<T> v)
-{
-    return v / v.length();
-}
-
-template<typename T> inline Vector4<T> reflect(const Vector4<T> &v, const Vector4<T> &n)
-{
-    return v - 2 * dot(v, n) * n;
-}
