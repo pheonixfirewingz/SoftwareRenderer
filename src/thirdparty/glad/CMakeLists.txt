@@ -1,0 +1,4 @@
+ADD_FILES(
+	gl.h
+	CONDITION ON_WINDOWS
+)

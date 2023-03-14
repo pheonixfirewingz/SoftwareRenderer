@@ -11,4 +11,5 @@ ADD_FILES(
 	imstb_textedit.h
 	imstb_truetype.h
 )
+add_subdirectory(glad)
 add_subdirectory(backend)

@@ -1,10 +1,15 @@
 #include "App.h"
+#ifdef ON_WINDOWS
+#    define GLAD_GL_IMPLEMENTATION
+#    include <glad/gl.h>
+#endif
 #include <GLFW/glfw3.h>
 #include <backend/imgui_impl_glfw.h>
 #include <backend/imgui_impl_opengl3.h>
 #include <imgui.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <algorithm>
 
 static void error_callback(int, const char *description)
 {
@@ -48,8 +53,9 @@ App::App(int width, int height, const char *title)
         exit(EXIT_FAILURE);
     }
     glfwMakeContextCurrent(static_cast<GLFWwindow *>(window));
-    glfwSwapInterval(1); // Enable vsync
-
+#ifdef ON_WINDOWS
+    gladLoadGL((GLADloadfunc)glfwGetProcAddress);
+#endif
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -87,15 +93,14 @@ void App::run()
     {
         glfwPollEvents();
 
-        // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         {
             int width, height;
             glfwGetFramebufferSize(static_cast<GLFWwindow *>(window), &width, &height);
-            ImGui::SetNextWindowSizeConstraints(ImVec2(width, height), ImVec2(width, height));
-            // const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+            ImGui::SetNextWindowSizeConstraints(ImVec2(float(width), float(height)),
+                                                                                 ImVec2(float(width), float(height)));
             ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
         }
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -104,11 +109,11 @@ void App::run()
         if (size.x != last_size.x || size.y != last_size.y)
         {
             last_size = size;
-            resizeCallback(abs(size.x), abs(size.y));
+            resizeCallback(int(std::abs(size.x)), int(std::abs(size.y)));
         }
         glBindTexture(GL_TEXTURE_2D, texture_id);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, abs(size.x), abs(size.y), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                     render(abs(size.x), abs(size.y)));
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, int(std::abs(size.x)), int(std::abs(size.y)), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                     render(int(std::abs(size.x)), int(std::abs(size.y))));
         glBindTexture(GL_TEXTURE_2D, 0);
         ImGui::Image((ImTextureID)(intptr_t)texture_id, size, ImVec2(0, 1), ImVec2(1, 0));
         ImGui::End();
@@ -140,6 +145,9 @@ App::~App()
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+#ifdef ON_WINDOWS
+    gladLoaderUnloadGL();
+#endif
     glfwTerminate();
     exit(EXIT_SUCCESS);
 }

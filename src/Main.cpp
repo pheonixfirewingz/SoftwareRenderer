@@ -13,13 +13,13 @@ class TestApp : public App
     TestApp(int width, int height, const char *title)
         : App(width, height, title)
     {
+        renderer = new Renderer(width, height);
         run();
     }
 
   protected:
-    void init(int width, int height) final override
+    void init(int, int) final override
     {
-        renderer = new Renderer(width, height);
     }
 
     void resizeCallback(int width, int height) final override
@@ -29,6 +29,16 @@ class TestApp : public App
 
     void renderDebugUI() final override
     {
+        ImGui::SetNextWindowSizeConstraints(ImVec2(float(110), float(55)), ImVec2(float(110), float(55)));
+        ImGui::Begin("Debug");
+        
+        if (ImGui::Button("Toggle Vsync"))
+        {
+            static bool vsync = true;
+            vsync = !vsync;
+            glfwSwapInterval(vsync);
+        }
+        ImGui::End();
     }
 
     const void *render(int, int) final override

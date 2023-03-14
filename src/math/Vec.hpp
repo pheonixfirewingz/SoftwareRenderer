@@ -443,3 +443,9 @@ template<typename T> class Vector4
         return Vector4<T>(std::pow(v.x_, n.x_), std::pow(v.y_, n.y_), std::pow(v.z_, n.z_), std::pow(v.w_, n.w_));
     }
 };
+
+using Vec2 = Vector2<double>;
+using Vec3 = Vector3<double>;
+using Vec4 = Vector4<double>;
+using Point = Vector3<double>;
+using Colour = Vector4<double>;
