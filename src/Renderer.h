@@ -2,9 +2,17 @@
 #include <util/Sse3.h>
 #include <render/Camera.hpp>
 #include <cstdint>
+struct Pixel
+{
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+    uint8_t a;
+};
+
 class Renderer
 {
-    uint32_t* screen_data;
+    Pixel* screen_data;
     uint32_t internal_width;
     uint32_t internal_height;
     public:
@@ -15,6 +23,6 @@ class Renderer
 
     void render();
 
-    const uint32_t* getScreenData() const noexcept; 
+    const Pixel* getScreenData() const noexcept; 
 
 };

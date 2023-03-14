@@ -1,6 +1,7 @@
 #pragma once
 #include <App.h>
-#include <glfw/glfw3.h>
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
 #include <math/Vec.hpp>
 #include <render/Ray.hpp>
 template<typename T> class Camera

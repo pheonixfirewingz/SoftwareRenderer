@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #ifdef IS_GCC
 #    define memory_align(x, v) x __attribute__((aligned(v)))
 #endif

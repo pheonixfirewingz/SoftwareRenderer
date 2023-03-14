@@ -1,45 +1,52 @@
 #include "App.h"
-#include "Renderer.h"
+#include <Renderer.h>
+#include <imgui.h>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
 class TestApp : public App
 {
-	Renderer *renderer;
+    Renderer *renderer;
     Camera<double> cam;
+
   public:
-	TestApp(int width, int height,const char* title) : App(width,height,title){
-		run();
-	}
-protected:
-	void init(int width, int height) final override
-	{
-		renderer = new Renderer(width,height);
-	}
+    TestApp(int width, int height, const char *title)
+        : App(width, height, title)
+    {
+        run();
+    }
 
-	void resizeCallback(int width, int height) final override
-	{
-		renderer->resizeScreen(width,height);
-	}
+  protected:
+    void init(int width, int height) final override
+    {
+        renderer = new Renderer(width, height);
+    }
 
-	
+    void resizeCallback(int width, int height) final override
+    {
+        renderer->resizeScreen(width, height);
+    }
 
-	const unsigned int* render(int, int) final override
-	{
+    void renderDebugUI() final override
+    {
+    }
+
+    const void *render(int, int) final override
+    {
         cam.update(this);
-		renderer->clearScreen(255,0,55,55);
-		renderer->render();
-		return renderer->getScreenData();
-	}
+        renderer->clearScreen(255, 0, 55, 55);
+        renderer->render();
+        return renderer->getScreenData();
+    }
 
-	void cleanup() final override
-	{
-		delete renderer;	
-	}
+    void cleanup() final override
+    {
+        delete renderer;
+    }
 };
 
 int main()
 {
-	TestApp app(500,500,"software Render App");
-	return 0;
+    TestApp app(500, 500, "software Render App");
+    return 0;
 }
