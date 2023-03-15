@@ -1,47 +1,34 @@
 #pragma once
-#include <math/Vec.hpp>
-
-template<typename T> class Ray
+#include <util/Math.hpp>
+class Ray
 {
-    Vector3<T> _src;
-    Vector3<T> _dir;
+    glm::vec3 _src;
+    glm::vec3 _dir;
 
   public:
     Ray() = default;
-    Ray(const Vector3<T> &src, const Vector3<T> &dir)
+    Ray(const glm::vec3 &src, const glm::vec3 &dir)
         : _src(src)
         , _dir(dir)
     {
     }
 
-    Vector3<T> src() const
+    glm::vec3 src() const
     {
         return _src;
     }
-    Vector3<T> dir() const
+    glm::vec3 dir() const
     {
         return _dir;
     }
 
-    Vector3<T> at(double t) const
+    Ray operator-(Ray& ray)
+    {
+        return Ray(ray._src, glm::vec3(-ray._dir.x,-ray._dir.y,-ray._dir.z));
+    }
+
+    glm::vec3 at(float t) const
     {
         return _src + t * _dir;
     }
-};
-
-template<typename T> struct HitInfomation
-{
-    Vector3<T> normal;
-    bool front_face;
-
-    void setNormals(const Ray<T> &r, const Vector3<T> &outward_normal)
-    {
-        front_face = dot<T>(r.direction(), outward_normal) < 0;
-        normal = front_face ? outward_normal : -outward_normal;
-    }
-};
-
-template<typename T> struct HitObject
-{
-    virtual bool didHit(const Ray<T> &ray, const T min, const T max, HitInfomation<T> &hit_info) const = 0;
 };

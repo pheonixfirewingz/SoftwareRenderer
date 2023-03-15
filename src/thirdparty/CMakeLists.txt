@@ -13,3 +13,4 @@ ADD_FILES(
 )
 add_subdirectory(glad)
 add_subdirectory(backend)
+add_subdirectory(meshoptimizer)

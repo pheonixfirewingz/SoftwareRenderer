@@ -2,35 +2,45 @@
 #include <App.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
-#include <math/Vec.hpp>
 #include <render/Ray.hpp>
-template<typename T> class Camera
+class Camera
 {
-    Vector3<T> position;
-    Vector4<T> rotation;
-    Vector3<T> scale;
-
+    glm::vec3 position;
+    glm::vec3 rotation;
+    glm::mat4x4 cam_matrix;
+    glm::mat4x4 cam_projection;
   public:
     Camera()
         : position(0, 0, 0)
-        , rotation(0, 1, 0, 0)
-        , scale(1, 1, 1)
+        , rotation(0, 1, 0)
     {
+    }
+
+    void updateView(int width,int height)
+    {
+        cam_projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
     }
 
     void update(App *app)
     {
         if (app->IsKeyDown(GLFW_KEY_W))
-            position.addZ(0.01);
+            position.z += 0.01f;
         if (app->IsKeyDown(GLFW_KEY_S))
-            position.addZ(-0.01);
+            position.z -= 0.01f;
         if (app->IsKeyDown(GLFW_KEY_A))
-            position.addX(0.01);
+            position.x += 0.01f;
         if (app->IsKeyDown(GLFW_KEY_D))
-            position.addX(-0.01);
+            position.x -= 0.01f;
         if (app->IsKeyDown(GLFW_KEY_SPACE))
-            position.addY(0.01);
+            position.y += 0.01f;
         if (app->IsKeyDown(GLFW_KEY_LEFT_SHIFT))
-            position.addY(-0.01);
+            position.y -= 0.01f;
+        cam_matrix = glm::rotate(glm::translate(glm::mat4x4(1.0f), position),glm::radians(45.0f),rotation);
+        cam_matrix = cam_projection * cam_matrix;
+    }
+
+    glm::mat4x4 getCameraMatrix() const noexcept
+    {
+        return cam_matrix;
     }
 };

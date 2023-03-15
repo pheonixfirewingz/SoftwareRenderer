@@ -2,39 +2,39 @@
 #include <render/Ray.hpp>
 class Light
 {
-    Colour colour;
-    Vec3 position;
-    Vec4 rotation;
+    glm::vec4 colour;
+    glm::vec3 position;
+    glm::vec4 rotation;
 
   public:
     Light()
-        : colour({1.0})
+        : colour({1.0f,1.0f,1.0f,1.0f})
         , position({0.0, 0.0, 0.0})
-        , rotation({0.0, 1.0, 0.0})
+        , rotation({0.0, 1.0, 0.0, 0.0})
     {
     }
 
-    void setColour(Colour new_colour)
+    void setColour(glm::vec4 new_colour)
     {
         colour = new_colour;
     }
 
-    void setPosition(Vec3 new_position)
+    void setPosition(glm::vec3 new_position)
     {
         position = new_position;
     }
 
-    void setRotation(Vec4 new_rotation)
+    void setRotation(glm::vec4 new_rotation)
     {
         rotation = new_rotation;
     }
 
     void reset()
     {
-        colour = Colour(1.0);
+        colour = glm::vec4(1.0f,1.0f,1.0f,1.0f);
     }
 
-    const Colour &getColour() const noexcept
+    const glm::vec4 &getColour() const noexcept
     {
         return colour;
     }

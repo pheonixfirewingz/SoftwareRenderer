@@ -1,6 +1,5 @@
 add_subdirectory(thirdparty)
 add_subdirectory(util)
-add_subdirectory(math)
 add_subdirectory(render)
 
 ADD_FILES(
