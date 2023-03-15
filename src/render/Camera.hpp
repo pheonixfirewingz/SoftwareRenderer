@@ -7,18 +7,11 @@ class Camera
 {
     glm::vec3 position;
     glm::vec3 rotation;
-    glm::mat4x4 cam_matrix;
-    glm::mat4x4 cam_projection;
   public:
     Camera()
         : position(0, 0, 0)
         , rotation(0, 1, 0)
     {
-    }
-
-    void updateView(int width,int height)
-    {
-        cam_projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
     }
 
     void update(App *app)
@@ -35,12 +28,6 @@ class Camera
             position.y += 0.01f;
         if (app->IsKeyDown(GLFW_KEY_LEFT_SHIFT))
             position.y -= 0.01f;
-        cam_matrix = glm::rotate(glm::translate(glm::mat4x4(1.0f), position),glm::radians(45.0f),rotation);
-        cam_matrix = cam_projection * cam_matrix;
     }
 
-    glm::mat4x4 getCameraMatrix() const noexcept
-    {
-        return cam_matrix;
-    }
 };

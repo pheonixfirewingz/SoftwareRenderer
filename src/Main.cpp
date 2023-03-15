@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <future>
 #include <imgui.h>
 #include <meshoptimizer.h>
 #include <vector>
@@ -42,10 +43,9 @@ Mesh parseObj(const char *path)
         {
             fastObjIndex gi = obj->indices[index_offset + j];
 
-            Vertex v = {
-                {obj->positions[gi.p * 3 + 0], obj->positions[gi.p * 3 + 1], obj->positions[gi.p * 3 + 2]},
-                {obj->normals[gi.n * 3 + 0], obj->normals[gi.n * 3 + 1], obj->normals[gi.n * 3 + 2]},
-                {obj->texcoords[gi.t * 2 + 0], obj->texcoords[gi.t * 2 + 1]}};
+            Vertex v = {{obj->positions[gi.p * 3 + 0], obj->positions[gi.p * 3 + 1], obj->positions[gi.p * 3 + 2]},
+                        {obj->normals[gi.n * 3 + 0], obj->normals[gi.n * 3 + 1], obj->normals[gi.n * 3 + 2]},
+                        {obj->texcoords[gi.t * 2 + 0], obj->texcoords[gi.t * 2 + 1]}};
 
             // triangulate polygon on the fly; offset-3 is always the first polygon vertex
             if (j >= 3)
@@ -88,6 +88,7 @@ class TestApp : public App
     Camera cam;
     uint64_t light_id;
     uint64_t mesh_id;
+
   public:
     TestApp(int width, int height, const char *title)
         : App(width, height, title)
@@ -97,21 +98,21 @@ class TestApp : public App
     }
 
   protected:
-    void init(int width, int height) final override
+    void init(int, int) final override
     {
-        cam.updateView(width,height);
-        light_id = renderer->genLight({0,0,0,0});
+        light_id = renderer->genLight({0, 0, 0, 0});
         mesh_id = renderer->genMesh();
-        Mesh mesh = parseObj(ROOT_PATH"/dependances/Sponza/sponza.obj");
-        renderer->transferData(mesh_id,REFRACTAL_VERTEX_BUFFER,mesh.vertices.size(),mesh.vertices.data());
-        renderer->transferData(mesh_id,REFRACTAL_INDEX_BUFFER,mesh.indices.size(),mesh.indices.data());
-        renderer->setMeshPosition(mesh_id,{0,0,0});
-        renderer->setMeshRotation(mesh_id,{0,1,0});
+        Mesh mesh = parseObj(ROOT_PATH "/dependances/Sponza/sponza.obj");
+        renderer->transferData(mesh_id, REFRACTAL_VERTEX_BUFFER, mesh.vertices.size(), mesh.vertices.data());
+        renderer->transferData(mesh_id, REFRACTAL_INDEX_BUFFER, mesh.indices.size(), mesh.indices.data());
+        renderer->setMeshPosition(mesh_id, {0, 0, 0});
+        renderer->setMeshRotation(mesh_id, {0, 1, 0});
+        cam.update(this);
+        renderer->clearScreen(255, 0, 55, 55);
     }
 
     void resizeCallback(int width, int height) final override
     {
-        cam.updateView(width,height);
         renderer->resizeScreen(width, height);
     }
 
@@ -132,9 +133,10 @@ class TestApp : public App
     const void *render(int, int) final override
     {
         cam.update(this);
-        renderer->setProjectionMatrix(cam.getCameraMatrix());
-        renderer->clearScreen(255, 0, 55, 55);
-        renderer->render();
+
+        static std::thread t([this]() {
+            renderer->render();
+        });
         return renderer->getScreenData();
     }
 
@@ -148,6 +150,6 @@ class TestApp : public App
 
 int main()
 {
-    TestApp app(1280, 720, "software Render App");
+    TestApp app(500, 500, "software Render App");
     return 0;
 }

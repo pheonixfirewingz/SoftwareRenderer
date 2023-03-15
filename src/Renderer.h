@@ -15,7 +15,8 @@ class Renderer
 {
     uint32_t internal_width;
     uint32_t internal_height;
-    glm::mat4x4 proj_matrix;
+    glm::vec3 viewport_position{0.f, 0.f, 0.f};
+    glm::vec4 viewport_rotation{0.f, 0.f, 0.f, 0.f};
     struct Pixel
     {
         uint8_t r;
@@ -29,11 +30,17 @@ class Renderer
         bool is_free = true;
     } lights[REFRACTAL_MAX_LIGHTS];
 
+    struct Triangle
+    {
+        Vertex point_0;
+        Vertex point_1;
+        Vertex point_2;
+    };
+
     struct Mesh
     {
-        std::vector<Vertex> vertices;
-        std::vector<Vertex> vertices_transformed;
-        std::vector<uint32_t> indices;
+        std::vector<Triangle> vertices;
+        std::vector<Triangle> vertices_transformed;
         glm::vec3 position;
         glm::vec3 rotation;
         bool is_free = true;
@@ -41,14 +48,15 @@ class Renderer
 
   protected:
     void processPixel(const uint64_t x, const uint64_t y);
-
   public:
     Renderer(int width, int height);
     ~Renderer();
     void clearScreen(uint8_t a, uint8_t r, uint8_t g, uint8_t b);
     void resizeScreen(int width, int height);
 
-    void setProjectionMatrix(glm::mat4x4 mat);
+    //view port
+    void setViewportPosition(const uint64_t id, glm::vec3 position);
+    void setViewPortRotation(const uint64_t id, glm::vec4 rotation);
 
 
     // lights

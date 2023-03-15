@@ -149,7 +149,6 @@ App::~App()
     gladLoaderUnloadGL();
 #endif
     glfwTerminate();
-    exit(EXIT_SUCCESS);
 }
 
 bool App::IsKeyDown(unsigned short key) const noexcept
