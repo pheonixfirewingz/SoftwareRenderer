@@ -23,18 +23,6 @@ Renderer::Renderer(int width, int height)
     screen_data = new Pixel[width * height];
 }
 
-void Renderer::clearScreen(uint8_t a, uint8_t r, uint8_t g, uint8_t b)
-{
-    Pixel pixel = Pixel({r, g, b, a});
-    __m128i pixel_data = _mm_set_epi32(r, g, b, a);
-    uint32_t pixel_count = internal_width * internal_height;
-    uint32_t i = 0;
-    for (; i + 3 < pixel_count; i += 4)
-        _mm_storeu_si128((__m128i *)&screen_data[i], pixel_data);
-    for (; i < pixel_count; i++)
-        screen_data[i] = pixel;
-}
-
 void Renderer::resizeScreen(int width, int height)
 {
     screen_data =
@@ -54,7 +42,7 @@ void Renderer::setViewPortRotation(const uint64_t, glm::vec4 rotation)
 
 uint64_t Renderer::genLight(glm::vec4 colour)
 {
-    for (uint64_t i = 0; i < (REFRACTAL_MAX_LIGHTS - 1); i++)
+    for (uint64_t i = 0; i < (REFRACTAL_MAX_LIGHTS - 1); ++i)
     {
         if (lights[i].is_free)
         {
@@ -84,11 +72,11 @@ void Renderer::destroyLight(const uint64_t id)
 
 uint64_t Renderer::genMesh()
 {
-    for (uint64_t i = 0; i < (REFRACTAL_MAX_MESH - 1); i++)
+    for (uint64_t i = 0; i < REFRACTAL_MAX_MESH; ++i)
     {
         if (buffers[i].is_free)
         {
-            buffers[i].is_free = false;
+            buffers[i].set();
             return i;
         }
     }
@@ -97,12 +85,14 @@ uint64_t Renderer::genMesh()
 
 void Renderer::setMeshPosition(const uint64_t id, glm::vec3 new_position)
 {
-    buffers[id].position = new_position;
+    buffers[id].mesh.position = new_position;
+    buffers[id].markDirty = true;
 }
 
 void Renderer::setMeshRotation(const uint64_t id, glm::vec3 new_rotation)
 {
-    buffers[id].rotation = new_rotation;
+    buffers[id].mesh.rotation = new_rotation;
+    buffers[id].markDirty = true;
 }
 
 void Renderer::transferData(const uint64_t id, const uint8_t type, const size_t buffer_size, void *data)
@@ -110,87 +100,74 @@ void Renderer::transferData(const uint64_t id, const uint8_t type, const size_t 
     switch (type)
     {
     case REFRACTAL_VERTEX_BUFFER: {
-        buffers[id].vertices.reserve(buffer_size);
+        buffers[id].mesh.vertices.reserve(buffer_size);
         for (size_t buffer_index = 0; buffer_index < buffer_size; buffer_index++)
-            buffers[id].vertices.emplace_back(*((Vertex *)data + buffer_index));
-    }
-    break;
-    case REFRACTAL_INDEX_BUFFER: {
-        std::vector<Vertex> old;
-        old.reserve(buffers[id].vertices.size() * 3);
-        for (Triangle &tri : buffers[id].vertices)
-        {
-            old.emplace_back(tri.point_0);
-            old.emplace_back(tri.point_1);
-            old.emplace_back(tri.point_2);
-        }
-        std::vector<Vertex> new_;
-        size_t vs = buffers[id].vertices.size();
-        new_.reserve(vs * 3);
-        std::vector<uint32_t> indexes;
-        indexes.reserve(buffer_size);
-        for (size_t buffer_index = 0; buffer_index < buffer_size; buffer_index++)
-            indexes.emplace_back(*((uint32_t *)data + buffer_index));
-        buffers[id].vertices.clear();
-        for (size_t buffer_index = 0; buffer_index < buffer_size; buffer_index++)
-            new_.push_back(old[indexes[buffer_index]]);
-        buffers[id].vertices.clear();
-        buffers[id].vertices.reserve(vs);
-
-        for (size_t buffer_index = 2; buffer_index < (vs * 3); buffer_index += 3)
-            buffers[id].vertices.emplace_back(
-                Triangle(new_[buffer_index - 2], new_[buffer_index - 1], new_[buffer_index]));
+            buffers[id].mesh.vertices.emplace_back(*((RefractalTriangle *)data + buffer_index));
     }
     break;
     default:
         break;
     }
+    buffers[id].markDirty = true;
 }
 
 void Renderer::destroyMesh(const uint64_t id)
 {
-    buffers[id].is_free = true;
-    buffers[id].vertices.clear();
+    buffers[id].free();
 }
 
-void Renderer::processPixel(const uint64_t , const uint64_t )
+void Renderer::processPixel(const uint64_t x, const uint64_t y)
 {
+    glm::vec2 coord = glm::vec2((float)x / (float)internal_width, (float)y / (float)internal_height) * 2.0f - 1.0f;
+    glm::vec3 colour(0, 0, 0);
+
+    for (size_t i = 0; i < REFRACTAL_MAX_MESH; ++i)
+    {
+        MeshRegister &mesh = buffers[i];
+        Ray ray(viewport_position, glm::vec3(coord.x, coord.y, -1.0f));
+        if (mesh.is_free)
+            continue;
+        if (mesh.mesh.hasHit(ray))
+            colour += mesh.mesh.colour;
+    }
+    screen_data[x + y * internal_width] =
+        Pixel(uint8_t(std::clamp(colour.r, 0.f, 1.f) * 255.0f), uint8_t(std::clamp(colour.g, 0.f, 1.f) * 255.0f),
+              uint8_t(std::clamp(colour.b, 0.f, 1.f) * 255.0f), 255);
 }
 
 void Renderer::render()
 {
-    clearScreen(255, 0, 55, 55);
-
-    for (size_t i = 0; i < REFRACTAL_MAX_MESH; i++)
+    /*for (size_t i = 0; i < REFRACTAL_MAX_MESH; i++)
     {
-        if (buffers[i].is_free)
+        if (buffers[i].is_free && !buffers[i].markDirty)
             continue;
-        buffers[i].vertices_transformed.resize(buffers[i].vertices.size());
-
-        // Find the maximum coordinate value among all the vertices in the mesh
-        float max_coord = 0.0f;
-        for (int j = 0; j < buffers[i].vertices.size(); j++)
-        {
-            glm::vec3 vertex = buffers[i].vertices[j].point_0.position;
-            max_coord = std::max(max_coord, std::max(std::max(vertex.x, vertex.y), vertex.z));
-            vertex = buffers[i].vertices[j].point_1.position;
-            max_coord = std::max(max_coord, std::max(std::max(vertex.x, vertex.y), vertex.z));
-            vertex = buffers[i].vertices[j].point_2.position;
-            max_coord = std::max(max_coord, std::max(std::max(vertex.x, vertex.y), vertex.z));
-        }
-
+        buffers[i].markDirty = false;
+        buffers[i].mesh.vertices.reserve(buffers[i].mesh.original_vertices.size());
         // Scale the vertices by the maximum coordinate value
-        float scale_factor = 1.0f / max_coord;
-        for (int j = 0; j < buffers[i].vertices.size(); j++)
+        for (size_t j = 0; j < buffers[i].mesh.original_vertices.size() - 1; j++)
         {
-            buffers[i].vertices_transformed[j].point_0.position =
-                buffers[i].position + buffers[i].rotation * buffers[i].vertices[j].point_0.position * scale_factor;
-            buffers[i].vertices_transformed[j].point_1.position =
-                buffers[i].position + buffers[i].rotation * buffers[i].vertices[j].point_1.position * scale_factor;
-            buffers[i].vertices_transformed[j].point_2.position =
-                buffers[i].position + buffers[i].rotation * buffers[i].vertices[j].point_2.position * scale_factor;
+
+            glm::mat4 transform = glm::translate(glm::mat4(1.0f), buffers[i].mesh.position);
+            transform *= glm::mat4_cast(glm::quat(glm::vec4(buffers[i].mesh.rotation, 1.0f)));
+            transform = glm::scale(transform, glm::vec3(1.0f));
+            glm::vec3 point_0;
+            glm::vec3 point_1;
+            glm::vec3 point_2;
+            {
+                glm::vec4 v_transformed = transform * glm::vec4(buffers[i].mesh.original_vertices[j].point_0, 1.0f);
+                glm::vec3 v_final = glm::vec3(v_transformed) / v_transformed.w;
+            }
+            {
+                glm::vec4 v_transformed = transform * glm::vec4(buffers[i].mesh.original_vertices[j].point_1, 1.0f);
+                glm::vec3 v_final = glm::vec3(v_transformed) / v_transformed.w;
+            }
+            {
+                glm::vec4 v_transformed = transform * glm::vec4(buffers[i].mesh.original_vertices[j].point_2, 1.0f);
+                glm::vec3 v_final = glm::vec3(v_transformed) / v_transformed.w;
+            }
         }
     }
+    */
 #ifdef _OPENMP
 #    pragma omp parallel for
 #endif

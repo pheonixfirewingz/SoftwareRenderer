@@ -1,22 +1,21 @@
 #pragma once
+#include <atomic>
 #include <cstdint>
 #include <render/Camera.hpp>
 #include <render/Light.hpp>
-#include <render/Vertex.hpp>
+#include <render/Mesh.hpp>
 #include <util/Sse3.h>
 #include <vector>
-#include <atomic>
 
-#define REFRACTAL_MAX_LIGHTS 100
-#define REFRACTAL_MAX_MESH 100
-#define REFRACTAL_VERTEX_BUFFER 1
-#define REFRACTAL_INDEX_BUFFER 0
+#define REFRACTAL_MAX_LIGHTS 1
+#define REFRACTAL_MAX_MESH 1
+#define REFRACTAL_VERTEX_BUFFER 0
 class Renderer
 {
     uint32_t internal_width;
     uint32_t internal_height;
     glm::vec3 viewport_position{0.f, 0.f, 0.f};
-    glm::vec4 viewport_rotation{0.f, 0.f, 0.f, 0.f};
+    glm::vec4 viewport_rotation{0.f, 1.f, 0.f, 0.f};
     struct Pixel
     {
         uint8_t r;
@@ -28,36 +27,37 @@ class Renderer
     {
         Light light;
         bool is_free = true;
+        
     } lights[REFRACTAL_MAX_LIGHTS];
 
-    struct Triangle
+    struct MeshRegister
     {
-        Vertex point_0;
-        Vertex point_1;
-        Vertex point_2;
-    };
-
-    struct Mesh
-    {
-        std::vector<Triangle> vertices;
-        std::vector<Triangle> vertices_transformed;
-        glm::vec3 position;
-        glm::vec3 rotation;
+        RefractalMesh mesh;
         bool is_free = true;
+        bool markDirty = true;
+        void set()
+        {
+          is_free = false;
+        }
+
+        void free()
+        {
+          is_free = true;
+          mesh = RefractalMesh();
+        }
     } buffers[REFRACTAL_MAX_MESH];
 
   protected:
     void processPixel(const uint64_t x, const uint64_t y);
+
   public:
     Renderer(int width, int height);
     ~Renderer();
-    void clearScreen(uint8_t a, uint8_t r, uint8_t g, uint8_t b);
     void resizeScreen(int width, int height);
 
-    //view port
+    // view port
     void setViewportPosition(const uint64_t id, glm::vec3 position);
     void setViewPortRotation(const uint64_t id, glm::vec4 rotation);
-
 
     // lights
     uint64_t genLight(glm::vec4 colour);
