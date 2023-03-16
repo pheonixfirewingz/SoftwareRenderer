@@ -9,7 +9,7 @@ class Camera
     glm::vec3 rotation;
   public:
     Camera()
-        : position(0, 0, 1)
+        : position(0, 0, 5)
         , rotation(0, 1, 0)
     {
     }
@@ -17,13 +17,13 @@ class Camera
     void update(App *app)
     {
         if (app->IsKeyDown(GLFW_KEY_W))
-            position.z += 0.1f;
-        if (app->IsKeyDown(GLFW_KEY_S))
             position.z -= 0.1f;
+        if (app->IsKeyDown(GLFW_KEY_S))
+            position.z += 0.1f;
         if (app->IsKeyDown(GLFW_KEY_A))
-            position.x += 0.1f;
-        if (app->IsKeyDown(GLFW_KEY_D))
             position.x -= 0.1f;
+        if (app->IsKeyDown(GLFW_KEY_D))
+            position.x += 0.1f;
         if (app->IsKeyDown(GLFW_KEY_SPACE))
             position.y += 0.1f;
         if (app->IsKeyDown(GLFW_KEY_LEFT_SHIFT))

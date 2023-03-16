@@ -86,13 +86,13 @@ uint64_t Renderer::genMesh()
 void Renderer::setMeshPosition(const uint64_t id, glm::vec3 new_position)
 {
     buffers[id].mesh.position = new_position;
-    buffers[id].markDirty = true;
+    markDirty = true;
 }
 
 void Renderer::setMeshRotation(const uint64_t id, glm::vec3 new_rotation)
 {
     buffers[id].mesh.rotation = new_rotation;
-    buffers[id].markDirty = true;
+    markDirty = true;
 }
 
 void Renderer::transferData(const uint64_t id, const uint8_t type, const size_t buffer_size, void *data)
@@ -100,15 +100,15 @@ void Renderer::transferData(const uint64_t id, const uint8_t type, const size_t 
     switch (type)
     {
     case REFRACTAL_VERTEX_BUFFER: {
-        buffers[id].mesh.vertices.reserve(buffer_size);
+        buffers[id].mesh.original_vertices.reserve(buffer_size);
         for (size_t buffer_index = 0; buffer_index < buffer_size; buffer_index++)
-            buffers[id].mesh.vertices.emplace_back(*((RefractalTriangle *)data + buffer_index));
+            buffers[id].mesh.original_vertices.emplace_back(*((RefractalTriangle *)data + buffer_index));
     }
     break;
     default:
         break;
     }
-    buffers[id].markDirty = true;
+    markDirty = true;
 }
 
 void Renderer::destroyMesh(const uint64_t id)
@@ -137,37 +137,45 @@ void Renderer::processPixel(const uint64_t x, const uint64_t y)
 
 void Renderer::render()
 {
-    /*for (size_t i = 0; i < REFRACTAL_MAX_MESH; i++)
-    {
-        if (buffers[i].is_free && !buffers[i].markDirty)
-            continue;
-        buffers[i].markDirty = false;
-        buffers[i].mesh.vertices.reserve(buffers[i].mesh.original_vertices.size());
-        // Scale the vertices by the maximum coordinate value
-        for (size_t j = 0; j < buffers[i].mesh.original_vertices.size() - 1; j++)
-        {
 
-            glm::mat4 transform = glm::translate(glm::mat4(1.0f), buffers[i].mesh.position);
-            transform *= glm::mat4_cast(glm::quat(glm::vec4(buffers[i].mesh.rotation, 1.0f)));
-            transform = glm::scale(transform, glm::vec3(1.0f));
-            glm::vec3 point_0;
-            glm::vec3 point_1;
-            glm::vec3 point_2;
+    if (markDirty)
+    {
+        markDirty = false;
+#ifdef _OPENMP
+#    pragma omp parallel for
+#endif
+        for (size_t i = 0; i < REFRACTAL_MAX_MESH; i++)
+        {
+            if (buffers[i].is_free)
+                continue;
+
+            buffers[i].mesh.vertices.reserve(buffers[i].mesh.original_vertices.size());
+            // Scale the vertices by the maximum coordinate value
+            for (size_t j = 0; j < buffers[i].mesh.original_vertices.size() - 1; j++)
             {
-                glm::vec4 v_transformed = transform * glm::vec4(buffers[i].mesh.original_vertices[j].point_0, 1.0f);
-                glm::vec3 v_final = glm::vec3(v_transformed) / v_transformed.w;
-            }
-            {
-                glm::vec4 v_transformed = transform * glm::vec4(buffers[i].mesh.original_vertices[j].point_1, 1.0f);
-                glm::vec3 v_final = glm::vec3(v_transformed) / v_transformed.w;
-            }
-            {
-                glm::vec4 v_transformed = transform * glm::vec4(buffers[i].mesh.original_vertices[j].point_2, 1.0f);
-                glm::vec3 v_final = glm::vec3(v_transformed) / v_transformed.w;
+
+                glm::mat4 transform = glm::translate(glm::mat4(1.0f), buffers[i].mesh.position);
+                transform *= glm::mat4_cast(glm::quat(glm::vec4(buffers[i].mesh.rotation, 1.0f)));
+                transform = glm::scale(transform, glm::vec3(1.0f));
+                glm::vec3 point_0;
+                glm::vec3 point_1;
+                glm::vec3 point_2;
+                {
+                    glm::vec4 v_transformed = transform * glm::vec4(buffers[i].mesh.original_vertices[j].point_0, 1.0f);
+                    point_0 = glm::vec3(v_transformed) / v_transformed.w;
+                }
+                {
+                    glm::vec4 v_transformed = transform * glm::vec4(buffers[i].mesh.original_vertices[j].point_1, 1.0f);
+                    point_1 = glm::vec3(v_transformed) / v_transformed.w;
+                }
+                {
+                    glm::vec4 v_transformed = transform * glm::vec4(buffers[i].mesh.original_vertices[j].point_2, 1.0f);
+                    point_2 = glm::vec3(v_transformed) / v_transformed.w;
+                }
+                buffers[i].mesh.vertices.emplace_back(RefractalTriangle(point_0, point_1, point_2));
             }
         }
     }
-    */
 #ifdef _OPENMP
 #    pragma omp parallel for
 #endif

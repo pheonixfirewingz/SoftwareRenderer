@@ -34,7 +34,7 @@ class Renderer
     {
         RefractalMesh mesh;
         bool is_free = true;
-        bool markDirty = true;
+        
         void set()
         {
           is_free = false;
@@ -49,7 +49,7 @@ class Renderer
 
   protected:
     void processPixel(const uint64_t x, const uint64_t y);
-
+    bool markDirty = true;
   public:
     Renderer(int width, int height);
     ~Renderer();
