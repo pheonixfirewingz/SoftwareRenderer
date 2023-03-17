@@ -104,7 +104,8 @@ void App::run()
             ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
         }
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
+        ImGui::Begin("Viewport", nullptr,
+                     ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs);
         ImVec2 size = ::ImGui::GetWindowSize();
         if (size.x != last_size.x || size.y != last_size.y)
         {
@@ -119,7 +120,8 @@ void App::run()
         ImGui::End();
         ImGui::PopStyleVar();
         ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
-        ImGui::Begin("FPS TRACKER", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
+        ImGui::Begin("FPS TRACKER", nullptr,
+                     ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs);
         ImGui::Text("FrameTime %.3f ms/frame (%.1f FPS)", 1000.0 / double(ImGui::GetIO().Framerate),
                     double(ImGui::GetIO().Framerate));
         ImGui::End();
@@ -154,4 +156,20 @@ App::~App()
 bool App::IsKeyDown(unsigned short key) const noexcept
 {
     return bool(glfwGetKey(static_cast<GLFWwindow *>(window), key) == GLFW_PRESS);
+}
+
+MousePos App::getMouseMove()
+{
+    double x = 0;
+    double y = 0;
+    if (!IsKeyDown(GLFW_KEY_1))
+    {
+        glfwGetCursorPos(static_cast<GLFWwindow *>(window), &x, &y);
+        int width, height;
+        glfwGetWindowSize(static_cast<GLFWwindow *>(window), &width, &height);
+        y = y - height / 2.0;
+        x = x - width / 2.0;
+        glfwSetCursorPos(static_cast<GLFWwindow *>(window), width / 2.0, height / 2.0);
+    }
+    return MousePos(x,y);
 }

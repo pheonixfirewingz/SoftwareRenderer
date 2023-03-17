@@ -57,7 +57,7 @@ class Renderer
 
     // view port
     void setViewportPosition(const uint64_t id, glm::vec3 position);
-    void setViewPortRotation(const uint64_t id, glm::vec4 rotation);
+    void setViewportRotation(const uint64_t id, glm::vec4 rotation);
 
     // lights
     uint64_t genLight(glm::vec4 colour);

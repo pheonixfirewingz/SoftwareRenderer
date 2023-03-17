@@ -1,9 +1,6 @@
 [submodule "dependances/glfw"]
 	path = dependances/glfw
 	url = https://github.com/glfw/glfw.git
-[submodule "dependances/Sponza"]
-	path = dependances/Sponza
-	url = https://github.com/jimmiebergmann/Sponza.git
 [submodule "src/thirdparty/meshoptimizer"]
 	path = src/thirdparty/meshoptimizer
 	url = https://github.com/zeux/meshoptimizer.git

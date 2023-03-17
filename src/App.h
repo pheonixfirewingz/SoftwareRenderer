@@ -1,4 +1,10 @@
 #pragma once
+struct MousePos
+{
+    double x;
+    double y;
+};
+
 class App
 {
     unsigned int texture_id;
@@ -14,4 +20,5 @@ class App
     virtual ~App();
   public:
     bool IsKeyDown(unsigned short key) const noexcept;
+    MousePos getMouseMove();
 };

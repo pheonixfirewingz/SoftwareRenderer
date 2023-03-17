@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#ifdef _OPENMP
+#if defined(_OPENMP) && !defined(WITH_DEBUG)
 #    include <omp.h>
 #endif
 #include <inttypes.h>
@@ -35,14 +35,18 @@ void Renderer::setViewportPosition(const uint64_t, glm::vec3 position)
     viewport_position = position;
 }
 
-void Renderer::setViewPortRotation(const uint64_t, glm::vec4 rotation)
+void Renderer::setViewportRotation(const uint64_t, glm::vec4 rotation)
 {
     viewport_rotation = rotation;
 }
 
 uint64_t Renderer::genLight(glm::vec4 colour)
 {
-    for (uint64_t i = 0; i < (REFRACTAL_MAX_LIGHTS - 1); ++i)
+#ifdef ON_WINDOWS
+    for (int64_t i = 0; i < REFRACTAL_MAX_LIGHTS; i++)
+#else
+    for (size_t i = 0; i < REFRACTAL_MAX_LIGHTS; i++)
+#endif //  ON_WINDOWS
     {
         if (lights[i].is_free)
         {
@@ -101,8 +105,10 @@ void Renderer::transferData(const uint64_t id, const uint8_t type, const size_t 
     {
     case REFRACTAL_VERTEX_BUFFER: {
         buffers[id].mesh.original_vertices.reserve(buffer_size);
-        for (size_t buffer_index = 0; buffer_index < buffer_size; buffer_index++)
-            buffers[id].mesh.original_vertices.emplace_back(*((RefractalTriangle *)data + buffer_index));
+        for (size_t buffer_index = 3; buffer_index < (buffer_size * 3); buffer_index += 3)
+            buffers[id].mesh.original_vertices.emplace_back(RefractalTriangle(*((glm::vec3 *)data + (buffer_index - 2)),
+                                                                              *((glm::vec3 *)data + (buffer_index - 1)),
+                                                                              *((glm::vec3 *)data + buffer_index)));
     }
     break;
     default:
@@ -124,38 +130,50 @@ void Renderer::processPixel(const uint64_t x, const uint64_t y)
     for (size_t i = 0; i < REFRACTAL_MAX_MESH; ++i)
     {
         MeshRegister &mesh = buffers[i];
-        Ray ray(viewport_position, glm::vec3(coord.x, coord.y, -1.0f));
+        Ray ray(viewport_position, glm::vec3(coord.x + viewport_rotation.x, coord.y + viewport_rotation.y, -1.0f));
         if (mesh.is_free)
             continue;
-        if (mesh.mesh.hasHit(ray))
-            colour += mesh.mesh.colour;
+        float distance = 0;
+        if (mesh.mesh.hasHit(ray, distance))
+        {
+            colour += glm::vec3(distance) / distance;
+        }
     }
-    screen_data[x + y * internal_width] =
+    uint8_t gray = uint8_t(std::clamp(colour.r, 0.f, 1.f) * 255.0f);
+    screen_data[x + y * internal_width] = Pixel(gray, gray, gray, 255);
+    /* screen_data[x + y * internal_width] =
         Pixel(uint8_t(std::clamp(colour.r, 0.f, 1.f) * 255.0f), uint8_t(std::clamp(colour.g, 0.f, 1.f) * 255.0f),
-              uint8_t(std::clamp(colour.b, 0.f, 1.f) * 255.0f), 255);
+              uint8_t(std::clamp(colour.b, 0.f, 1.f) * 255.0f), 255);*/
 }
 
 void Renderer::render()
 {
-
     if (markDirty)
     {
         markDirty = false;
 #ifdef _OPENMP
 #    pragma omp parallel for
 #endif
+#ifdef ON_WINDOWS
+        for (int64_t i = 0; i < REFRACTAL_MAX_MESH; i++)
+#else
         for (size_t i = 0; i < REFRACTAL_MAX_MESH; i++)
+#endif //  ON_WINDOWS
         {
             if (buffers[i].is_free)
                 continue;
 
+            buffers[i].mesh.vertices.clear();
             buffers[i].mesh.vertices.reserve(buffers[i].mesh.original_vertices.size());
             // Scale the vertices by the maximum coordinate value
-            for (size_t j = 0; j < buffers[i].mesh.original_vertices.size() - 1; j++)
+#ifdef ON_WINDOWS
+            for (int64_t j = 0; j < int64_t(buffers[i].mesh.original_vertices.size()); j++)
+#else
+            for (size_t j = 0; j < buffers[i].mesh.original_vertices.size(); j++)
+#endif
             {
-
-                glm::mat4 transform = glm::translate(glm::mat4(1.0f), buffers[i].mesh.position);
-                transform *= glm::mat4_cast(glm::quat(glm::vec4(buffers[i].mesh.rotation, 1.0f)));
+                glm::mat4 transform =  glm::mat4_cast(glm::quat(glm::vec4(buffers[i].mesh.rotation, 1.0f)));
+                transform *= glm::translate(glm::mat4(1.0f), buffers[i].mesh.position);
                 transform = glm::scale(transform, glm::vec3(1.0f));
                 glm::vec3 point_0;
                 glm::vec3 point_1;
@@ -176,7 +194,7 @@ void Renderer::render()
             }
         }
     }
-#ifdef _OPENMP
+#if defined(_OPENMP)
 #    pragma omp parallel for
 #endif
     for (int64_t y = 0; y < internal_height; y++)

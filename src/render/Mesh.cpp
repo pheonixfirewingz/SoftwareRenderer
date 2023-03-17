@@ -1,18 +1,22 @@
 #include "Mesh.hpp"
 
-bool RefractalMesh::hasHit(const Ray &ray)
+bool RefractalMesh::hasHit(const Ray &ray, float& distance)
 {
     bool hit_tri = false;
-    long triangles_size = vertices.size();
-    for (long i = 0; i < triangles_size; ++i)
-        if (vertices[i].hasHit(ray))
+    size_t triangles_size = vertices.size();
+    float distance_ = std::numeric_limits<float>::epsilon();
+    for (size_t i = 0; i < triangles_size; ++i)
+        if (vertices[i].hasHit(ray, distance_))
+        {
             hit_tri = true;
+            distance = distance_;
+        }
     return hit_tri;
 }
 
-bool RefractalTriangle::hasHit(const Ray &ray)
+bool RefractalTriangle::hasHit(const Ray &ray, float &distance)
 {
-    float u, v, t_temp = 0.0f;
+    float u, v;
 
     glm::vec3 pvec = glm::cross(ray.dir(), edge_2);
     float det = glm::dot(edge_1, pvec);
@@ -27,8 +31,8 @@ bool RefractalTriangle::hasHit(const Ray &ray)
     v = glm::dot(ray.dir(), qvec) * inv_det;
     if (v < 0.0f || u + v > 1.0f)
         return false;
-    t_temp = glm::dot(edge_2, qvec) * inv_det;
-    if (t_temp < std::numeric_limits<float>::max() && t_temp > std::numeric_limits<float>::epsilon())
+    distance = glm::dot(edge_2, qvec) * inv_det;
+    if (distance < std::numeric_limits<float>::max() && distance > std::numeric_limits<float>::epsilon())
         return true;
     return false;
 }

@@ -4,7 +4,7 @@
 
 struct Hittable
 {
-    virtual bool hasHit(const Ray &ray) = 0;
+    virtual bool hasHit(const Ray &ray, float& distance) = 0;
 };
 
 struct RefractalTriangle : public Hittable
@@ -24,7 +24,7 @@ struct RefractalTriangle : public Hittable
         edge_1 = point_1_in - point_0_in;
         edge_2 = point_2_in - point_0_in;
     }
-    virtual bool hasHit(const Ray &ray) final override;
+    virtual bool hasHit(const Ray &ray,float& distance) final override;
 };
 
 struct RefractalMesh : public Hittable
@@ -39,5 +39,5 @@ struct RefractalMesh : public Hittable
         colour = glm::vec3((float)rand() / RAND_MAX);
     }
     ~RefractalMesh() = default;
-    virtual bool hasHit(const Ray &ray) final override;
+    virtual bool hasHit(const Ray &ray, float& distance) final override;
 };

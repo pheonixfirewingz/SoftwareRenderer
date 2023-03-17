@@ -5,12 +5,16 @@
 #include <render/Ray.hpp>
 class Camera
 {
+    //temp
+    friend App;
+    //----
     glm::vec3 position;
-    glm::vec3 rotation;
+    glm::vec4 rotation;
+
   public:
     Camera()
         : position(0, 0, 5)
-        , rotation(0, 1, 0)
+        , rotation(0, 0, 0, 0)
     {
     }
 
@@ -28,6 +32,11 @@ class Camera
             position.y += 0.1f;
         if (app->IsKeyDown(GLFW_KEY_LEFT_SHIFT))
             position.y -= 0.1f;
+    }
+
+    glm::vec4 getRot() const noexcept
+    {
+        return rotation;
     }
 
     glm::vec3 getPos() const noexcept
