@@ -23,7 +23,7 @@ bool RefractalTriangle::hasHit(const Ray &ray, float &distance)
     if (det == 0.0f)
         return false;
     float inv_det = 1.0f / det;
-    glm::vec3 tvec = ray.origin() - point_0;
+    glm::vec3 tvec = ray.origin() - glm::vec3(point_0.x,point_0.y,point_0.z);
     u = glm::dot(tvec, pvec) * inv_det;
     if (u < 0.0f || u > 1.0f)
         return false;

@@ -106,9 +106,9 @@ void Renderer::transferData(const uint64_t id, const uint8_t type, const size_t 
     case REFRACTAL_VERTEX_BUFFER: {
         buffers[id].mesh.original_vertices.reserve(buffer_size);
         for (size_t buffer_index = 3; buffer_index < (buffer_size * 3); buffer_index += 3)
-            buffers[id].mesh.original_vertices.emplace_back(RefractalTriangle(*((glm::vec3 *)data + (buffer_index - 2)),
+            buffers[id].mesh.original_vertices.emplace_back(RefractalTriangle(*((glm::vec3 *)data + (buffer_index)),
                                                                               *((glm::vec3 *)data + (buffer_index - 1)),
-                                                                              *((glm::vec3 *)data + buffer_index)));
+                                                                              *((glm::vec3 *)data + (buffer_index - 2))));
     }
     break;
     default:
@@ -175,21 +175,9 @@ void Renderer::render()
                 glm::mat4 transform =  glm::mat4_cast(glm::quat(glm::vec4(buffers[i].mesh.rotation, 1.0f)));
                 transform *= glm::translate(glm::mat4(1.0f), buffers[i].mesh.position);
                 transform = glm::scale(transform, glm::vec3(1.0f));
-                glm::vec3 point_0;
-                glm::vec3 point_1;
-                glm::vec3 point_2;
-                {
-                    glm::vec4 v_transformed = transform * glm::vec4(buffers[i].mesh.original_vertices[j].point_0, 1.0f);
-                    point_0 = glm::vec3(v_transformed) / v_transformed.w;
-                }
-                {
-                    glm::vec4 v_transformed = transform * glm::vec4(buffers[i].mesh.original_vertices[j].point_1, 1.0f);
-                    point_1 = glm::vec3(v_transformed) / v_transformed.w;
-                }
-                {
-                    glm::vec4 v_transformed = transform * glm::vec4(buffers[i].mesh.original_vertices[j].point_2, 1.0f);
-                    point_2 = glm::vec3(v_transformed) / v_transformed.w;
-                }
+                glm::vec4 point_0 = transform * buffers[i].mesh.original_vertices[j].point_0;
+                glm::vec4 point_1 = transform * buffers[i].mesh.original_vertices[j].point_1;
+                glm::vec4 point_2 = transform * buffers[i].mesh.original_vertices[j].point_2;
                 buffers[i].mesh.vertices.emplace_back(RefractalTriangle(point_0, point_1, point_2));
             }
         }
