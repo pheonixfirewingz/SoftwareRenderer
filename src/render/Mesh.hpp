@@ -21,8 +21,8 @@ struct RefractalTriangle : public Hittable
         , point_1(point_1_in)
         , point_2(point_2_in)
     {
-        edge_1 = point_1_in - point_0_in;
-        edge_2 = point_2_in - point_0_in;
+        edge_1 = point_1 - point_0;
+        edge_2 = point_2 - point_0;
     }
     virtual bool hasHit(const Ray &ray,float& distance) final override;
 };
@@ -33,11 +33,5 @@ struct RefractalMesh : public Hittable
     std::vector<RefractalTriangle> vertices;
     glm::vec3 position;
     glm::vec3 rotation;
-    glm::vec3 colour;
-    RefractalMesh()
-    {
-        colour = glm::vec3((float)rand() / RAND_MAX);
-    }
-    ~RefractalMesh() = default;
     virtual bool hasHit(const Ray &ray, float& distance) final override;
 };
