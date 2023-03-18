@@ -54,7 +54,7 @@ class TestApp : public App
         mesh_id = renderer->genMesh();
         std::vector<glm::vec3> mesh = parseObj(ROOT_PATH "/dependances/cornell-box.obj");
         renderer->transferData(mesh_id, REFRACTAL_VERTEX_BUFFER, mesh.size() / 3, (void *)mesh.data());
-        renderer->setMeshPosition(mesh_id, {0, -2, 0});
+        renderer->setMeshPosition(mesh_id, {0, -3, 0});
         renderer->setMeshRotation(mesh_id, {0, 0, 0});
         cam.update(this);
     }
@@ -66,7 +66,7 @@ class TestApp : public App
 
     void renderDebugUI() final override
     {
-        ImGui::SetNextWindowSizeConstraints(ImVec2(float(110), float(55)), ImVec2(float(110), float(55)));
+        /*ImGui::SetNextWindowSizeConstraints(ImVec2(float(110), float(55)), ImVec2(float(110), float(55)));
         ImGui::Begin("Debug");
 
         if (ImGui::Button("Toggle Vsync"))
@@ -75,7 +75,7 @@ class TestApp : public App
             vsync = !vsync;
             glfwSwapInterval(vsync);
         }
-        ImGui::End();
+        ImGui::End();*/
     }
 
     const void *render(int, int) final override

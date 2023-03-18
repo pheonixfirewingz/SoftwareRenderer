@@ -7,13 +7,11 @@ struct Hittable
     virtual bool hasHit(const Ray &ray, float& distance) = 0;
 };
 
-struct RefractalTriangle : public Hittable
+struct RefractalTriangle
 {
     glm::vec4 point_0;
     glm::vec4 point_1;
     glm::vec4 point_2;
-    glm::vec3 edge_1;
-    glm::vec3 edge_2;
 
     RefractalTriangle() = default;
     RefractalTriangle(glm::vec3 point_0_in, glm::vec3 point_1_in, glm::vec3 point_2_in) : RefractalTriangle(glm::vec4(point_0_in, 1.0f),glm::vec4(point_1_in, 1.0f),glm::vec4(point_2_in, 1.0f))
@@ -24,11 +22,7 @@ struct RefractalTriangle : public Hittable
         , point_1(point_1_in)
         , point_2(point_2_in)
     {
-        edge_1 = glm::vec3(point_1.x,point_1.y,point_1.z) - glm::vec3(point_0.x,point_0.y,point_0.z);
-        edge_2 = glm::vec3(point_2.x,point_2.y,point_2.z) - glm::vec3(point_0.x,point_0.y,point_0.z);
     }
-
-    virtual bool hasHit(const Ray &ray,float& distance) final override;
 };
 
 struct RefractalMesh : public Hittable
