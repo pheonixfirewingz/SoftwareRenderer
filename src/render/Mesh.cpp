@@ -9,7 +9,8 @@ bool RefractalMesh::hasHit(const Ray &ray, float& distance)
         if (vertices[i].hasHit(ray, distance_))
         {
             hit_tri = true;
-            distance = distance_;
+            if(distance < distance_)
+                distance = distance_;
         }
     return hit_tri;
 }

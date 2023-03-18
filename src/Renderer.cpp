@@ -136,14 +136,13 @@ void Renderer::processPixel(const uint64_t x, const uint64_t y)
         float distance = 0;
         if (mesh.mesh.hasHit(ray, distance))
         {
-            colour += glm::vec3(distance) / distance;
+            colour += glm::vec3(1,1,1) / distance;
+            break;
         }
     }
-    uint8_t gray = uint8_t(std::clamp(colour.r, 0.f, 1.f) * 255.0f);
-    screen_data[x + y * internal_width] = Pixel(gray, gray, gray, 255);
-    /* screen_data[x + y * internal_width] =
+    screen_data[x + y * internal_width] =
         Pixel(uint8_t(std::clamp(colour.r, 0.f, 1.f) * 255.0f), uint8_t(std::clamp(colour.g, 0.f, 1.f) * 255.0f),
-              uint8_t(std::clamp(colour.b, 0.f, 1.f) * 255.0f), 255);*/
+              uint8_t(std::clamp(colour.b, 0.f, 1.f) * 255.0f), 255);
 }
 
 void Renderer::render()
