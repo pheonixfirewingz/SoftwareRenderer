@@ -1,5 +1,7 @@
 #pragma once
 #include <math.h>
+#define GLM_MESSAGES
+#define GLM_FORCE_INLINE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>

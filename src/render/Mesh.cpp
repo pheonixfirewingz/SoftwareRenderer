@@ -1,12 +1,10 @@
 #include "Mesh.hpp"
 #include <util/Math.hpp>
 
-bool RefractalMesh::hasHit(const Ray &ray, RayHitInfomation &info)
+bool RefractalMesh::hasHit(const Ray &ray, RayHitInfomation &info) noexcept
 {
     bool hit_tri = false;
     size_t triangles_size = vertices.size();
-    float closest_distance = std::numeric_limits<float>::max();
-    glm::vec2 closest_barry_pos = {0, 0};
     size_t closest_hit_index = 0;
 
     for (size_t i = triangles_size - 1; i != 0; --i)
@@ -20,22 +18,18 @@ bool RefractalMesh::hasHit(const Ray &ray, RayHitInfomation &info)
                 glm::vec3(vertices[i].point_2.x, vertices[i].point_2.y, vertices[i].point_2.z) / vertices[i].point_2.w,
                 barry_pos, distance))
         {
-            if (distance < closest_distance)
+            if (distance < info.distance)
             {
                 hit_tri = true;
-                closest_distance = distance;
-                closest_barry_pos = barry_pos;
                 closest_hit_index = i;
+                info.distance = distance;
+                info.barry_pos = barry_pos;
             }
         }
     }
 
     if (hit_tri)
-    {
-        info.distance = closest_distance;
-        info.barry_pos = closest_barry_pos;
         info.colour = vertices[closest_hit_index].colour;
-    }
 
     return hit_tri;
 }

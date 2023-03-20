@@ -167,9 +167,9 @@ void Renderer::processPixel(const uint64_t x, const uint64_t y)
             break;
         }
     }
-    screen_data[x + y * internal_width] =
-        Pixel(uint8_t(std::clamp(colour.r, 0.f, 1.f) * 255.0f), uint8_t(std::clamp(colour.g, 0.f, 1.f) * 255.0f),
-              uint8_t(std::clamp(colour.b, 0.f, 1.f) * 255.0f), 255);
+        screen_data[x + y * internal_width] =
+            Pixel(uint8_t(std::clamp(colour.r, 0.f, 1.f) * 255.0f), uint8_t(std::clamp(colour.g, 0.f, 1.f) * 255.0f),
+                  uint8_t(std::clamp(colour.b, 0.f, 1.f) * 255.0f), 255);
 }
 
 void Renderer::render()
@@ -217,7 +217,7 @@ void Renderer::render()
             processPixel(x, y);
 }
 
-const void *Renderer::getScreenData() const noexcept
+const void *Renderer::getScreenData() noexcept
 {
     return (const void *)screen_data;
 }

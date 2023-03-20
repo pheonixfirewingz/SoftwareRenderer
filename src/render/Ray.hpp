@@ -1,6 +1,5 @@
 #pragma once
 #include <util/Math.hpp>
-
 class Ray
 {
     glm::vec3 _src;
@@ -13,12 +12,11 @@ class Ray
         , _dir(dir)
     {
     }
-
-    glm::vec3 origin() const
+    glm::vec3 origin() const noexcept
     {
         return _src;
     }
-    glm::vec3 dir() const
+    glm::vec3 dir() const noexcept
     {
         return _dir;
     }
@@ -26,8 +24,8 @@ class Ray
 
 struct RayHitInfomation
 {
-    float distance;
-    glm::vec2 barry_pos;
-    //temp
-    glm::vec3 colour;
+    float distance = std::numeric_limits<float>::max();
+    glm::vec2 barry_pos = {0, 0};
+    // temp
+    glm::vec3 colour{0, 0, 0};
 };

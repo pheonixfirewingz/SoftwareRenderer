@@ -48,7 +48,7 @@ class Renderer
     } buffers[REFRACTAL_MAX_MESH];
 
   protected:
-    void processPixel(const uint64_t x, const uint64_t y);
+    inline void processPixel(const uint64_t x, const uint64_t y);
     bool markDirty = true;
   public:
     Renderer(int width, int height);
@@ -74,5 +74,5 @@ class Renderer
 
     void render();
 
-    const void *getScreenData() const noexcept;
+    const void *getScreenData() noexcept;
 };

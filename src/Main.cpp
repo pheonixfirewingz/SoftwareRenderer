@@ -6,7 +6,7 @@
 #include <cstring>
 #ifdef IS_GCC
 #    pragma GCC diagnostic push
-#    pragma GCC diagnostic ignored "-Wunused-value" 
+#    pragma GCC diagnostic ignored "-Wunused-value"
 #    pragma GCC diagnostic ignored "-Wsign-compare"
 #    pragma GCC diagnostic ignored "-Wdouble-promotion"
 #endif
@@ -27,7 +27,8 @@ static std::vector<glm::vec3> parseObj(const char *path)
     {
         objl::Mesh curMesh = Loader.LoadedMeshes[i];
         for (size_t j = 0; j < curMesh.Vertices.size(); j++)
-            vertices.push_back(glm::vec3(curMesh.Vertices[j].Position.X,curMesh.Vertices[j].Position.Y,curMesh.Vertices[j].Position.Z));
+            vertices.push_back(glm::vec3(curMesh.Vertices[j].Position.X, curMesh.Vertices[j].Position.Y,
+                                         curMesh.Vertices[j].Position.Z));
     }
     return vertices;
 }

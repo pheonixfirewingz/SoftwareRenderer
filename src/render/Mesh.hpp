@@ -18,6 +18,8 @@ struct RefractalTriangle
         colour = glm::vec3((float(rand()) / RAND_MAX) + 0.1f, (float(rand()) / RAND_MAX) + 0.1f,
                            (float(rand()) / RAND_MAX) + 0.1f);
     }
+
+
 };
 
 struct RefractalMesh
@@ -26,5 +28,5 @@ struct RefractalMesh
     std::vector<RefractalTriangle> vertices;
     glm::vec3 position;
     glm::vec3 rotation;
-    bool hasHit(const Ray &ray, RayHitInfomation &distance);
+    bool hasHit(const Ray &ray, RayHitInfomation &distance) noexcept;
 };
