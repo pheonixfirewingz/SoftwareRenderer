@@ -13,7 +13,7 @@ class Camera
 
   public:
     Camera()
-        : position(0,1.5, 2)
+        : position(-2,3, -3)
         , rotation(0, 0, 0)
     {
     }

@@ -53,7 +53,7 @@ class TestApp : public App
     {
         light_id = renderer->genLight({1, 1, 1, 1});
         mesh_id = renderer->genMesh();
-        std::vector<glm::vec3> mesh = parseObj(ROOT_PATH "/dependances/cornell-box.obj");
+        std::vector<glm::vec3> mesh = parseObj(ROOT_PATH "/dependances/sponza.obj");
         renderer->transferData(mesh_id, REFRACTAL_VERTEX_BUFFER, mesh.size() * 3, (void *)mesh.data());
         renderer->setMeshPosition(mesh_id, {0, 0, 0});
         renderer->setMeshRotation(mesh_id, {0, 0, 0});
@@ -67,7 +67,7 @@ class TestApp : public App
 
     void renderDebugUI() final override
     {
-        /*ImGui::SetNextWindowSizeConstraints(ImVec2(float(110), float(55)), ImVec2(float(110), float(55)));
+        ImGui::SetNextWindowSizeConstraints(ImVec2(float(110), float(55)), ImVec2(float(110), float(55)));
         ImGui::Begin("Debug");
 
         if (ImGui::Button("Toggle Vsync"))
@@ -76,7 +76,7 @@ class TestApp : public App
             vsync = !vsync;
             glfwSwapInterval(vsync);
         }
-        ImGui::End();*/
+        ImGui::End();
     }
 
     const void *render(int, int) final override
@@ -84,7 +84,7 @@ class TestApp : public App
         cam.update(this);
         renderer->setViewportRotation(0, cam.getRot());
         renderer->setViewportPosition(0, cam.getPos());
-        renderer->render();
+        static std::thread k([this]() { renderer->render(); });
         return renderer->getScreenData();
     }
 
