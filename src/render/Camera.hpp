@@ -9,12 +9,12 @@ class Camera
     friend App;
     //----
     glm::vec3 position;
-    glm::vec4 rotation;
+    glm::vec3 rotation;
 
   public:
     Camera()
-        : position(0, 0.5, 3)
-        , rotation(0, 0, 0, 0)
+        : position(0,1.5, 2)
+        , rotation(0, 0, 0)
     {
     }
 
@@ -34,7 +34,7 @@ class Camera
             position.y -= 0.1f;
     }
 
-    glm::vec4 getRot() const noexcept
+    glm::vec3 getRot() const noexcept
     {
         return rotation;
     }

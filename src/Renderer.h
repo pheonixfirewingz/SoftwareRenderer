@@ -15,7 +15,7 @@ class Renderer
     uint32_t internal_width;
     uint32_t internal_height;
     glm::vec3 viewport_position{0.f, 0.f, 0.f};
-    glm::vec4 viewport_rotation{0.f, 1.f, 0.f, 1.f};
+    glm::vec3 viewport_rotation{0.f, 1.f, 0.f};
     struct Pixel
     {
         uint8_t r;
@@ -57,7 +57,7 @@ class Renderer
 
     // view port
     void setViewportPosition(const uint64_t id, glm::vec3 position);
-    void setViewportRotation(const uint64_t id, glm::vec4 rotation);
+    void setViewportRotation(const uint64_t id, glm::vec3 rotation);
 
     // lights
     uint64_t genLight(glm::vec4 colour);

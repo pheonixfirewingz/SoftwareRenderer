@@ -35,7 +35,7 @@ void Renderer::setViewportPosition(const uint64_t, glm::vec3 position)
     viewport_position = position;
 }
 
-void Renderer::setViewportRotation(const uint64_t, glm::vec4 rotation)
+void Renderer::setViewportRotation(const uint64_t, glm::vec3 rotation)
 {
     viewport_rotation = rotation;
 }
@@ -101,14 +101,41 @@ void Renderer::setMeshRotation(const uint64_t id, glm::vec3 new_rotation)
 
 void Renderer::transferData(const uint64_t id, const uint8_t type, const size_t buffer_size, void *data)
 {
+    // TODO: add error system
+    if (buffer_size == 0)
+        return;
+
     switch (type)
     {
+        /*
+         * BUFFER DEFAULT DATA: x,y,z,x,y,z,x,y,z,x,y,z....
+         */
     case REFRACTAL_VERTEX_BUFFER: {
-        buffers[id].mesh.original_vertices.reserve(buffer_size);
-        for (size_t buffer_index = 3; buffer_index < (buffer_size * 3); buffer_index += 3)
-            buffers[id].mesh.original_vertices.emplace_back(RefractalTriangle(*((glm::vec3 *)data + (buffer_index)),
-                                                                              *((glm::vec3 *)data + (buffer_index - 1)),
-                                                                              *((glm::vec3 *)data + (buffer_index - 2))));
+        float *cast = static_cast<float *>(data);
+        std::vector<glm::vec4> v_data;
+        v_data.resize(buffer_size / 3);
+        {
+            size_t i = 0;
+            for (size_t buffer_index = 0; buffer_index < buffer_size;)
+            {
+                float x = *(cast + buffer_index++);
+                float y = *(cast + buffer_index++);
+                float z = *(cast + buffer_index++);
+                v_data[i] = glm::vec4(x, y, z, 1.0f);
+                i++;
+            }
+        }
+        buffers[id].mesh.original_vertices.resize(v_data.size() / 3);
+        {
+            size_t i = 0;
+            for (size_t buffer_index = 0; buffer_index < v_data.size();)
+            {
+                glm::vec4 p0 = *(v_data.data() + buffer_index++);
+                glm::vec4 p1 = *(v_data.data() + buffer_index++);
+                glm::vec4 p2 = *(v_data.data() + buffer_index++);
+                buffers[id].mesh.original_vertices[i++] = RefractalTriangle(p0, p1, p2);
+            }
+        }
     }
     break;
     default:
@@ -133,10 +160,10 @@ void Renderer::processPixel(const uint64_t x, const uint64_t y)
         Ray ray(viewport_position, glm::vec3(coord.x + viewport_rotation.x, coord.y + viewport_rotation.y, -1.0f));
         if (mesh.is_free)
             continue;
-        float distance = 0;
-        if (mesh.mesh.hasHit(ray, distance))
+        RayHitInfomation info{};
+        if (mesh.mesh.hasHit(ray, info))
         {
-            colour += glm::vec3(1,1,1) / distance;
+            colour += info.colour;
             break;
         }
     }
@@ -171,13 +198,14 @@ void Renderer::render()
             for (size_t j = 0; j < buffers[i].mesh.original_vertices.size(); j++)
 #endif
             {
-                glm::mat4 transform =  glm::mat4_cast(glm::quat(glm::vec4(buffers[i].mesh.rotation, 1.0f)));
+                glm::mat4 transform = glm::mat4_cast(glm::quat(glm::vec4(buffers[i].mesh.rotation, 1.0f)));
                 transform *= glm::translate(glm::mat4(1.0f), buffers[i].mesh.position);
-                transform = glm::scale(transform, glm::vec3(1.0f));
-                glm::vec4 point_0 = transform * buffers[i].mesh.original_vertices[j].point_0;
-                glm::vec4 point_1 = transform * buffers[i].mesh.original_vertices[j].point_1;
+                transform = glm::scale(transform, glm::vec3(.5f));
+
+                glm::vec4 point_0 =  transform * buffers[i].mesh.original_vertices[j].point_0;
+                glm::vec4 point_1 =  transform * buffers[i].mesh.original_vertices[j].point_1;
                 glm::vec4 point_2 = transform * buffers[i].mesh.original_vertices[j].point_2;
-                buffers[i].mesh.vertices.emplace_back(RefractalTriangle(point_0, point_1, point_2));
+                buffers[i].mesh.vertices.emplace_back(RefractalTriangle(point_0, point_1, point_2,false));
             }
         }
     }

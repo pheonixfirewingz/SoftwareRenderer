@@ -23,3 +23,11 @@ class Ray
         return _dir;
     }
 };
+
+struct RayHitInfomation
+{
+    float distance;
+    glm::vec2 barry_pos;
+    //temp
+    glm::vec3 colour;
+};

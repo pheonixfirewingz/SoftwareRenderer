@@ -53,8 +53,8 @@ class TestApp : public App
         light_id = renderer->genLight({1, 1, 1, 1});
         mesh_id = renderer->genMesh();
         std::vector<glm::vec3> mesh = parseObj(ROOT_PATH "/dependances/cornell-box.obj");
-        renderer->transferData(mesh_id, REFRACTAL_VERTEX_BUFFER, mesh.size() / 3, (void *)mesh.data());
-        renderer->setMeshPosition(mesh_id, {0, -3, 0});
+        renderer->transferData(mesh_id, REFRACTAL_VERTEX_BUFFER, mesh.size() * 3, (void *)mesh.data());
+        renderer->setMeshPosition(mesh_id, {0, 0, 0});
         renderer->setMeshRotation(mesh_id, {0, 0, 0});
         cam.update(this);
     }
