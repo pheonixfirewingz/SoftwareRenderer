@@ -111,7 +111,8 @@ void Renderer::transferData(const uint64_t id, const uint8_t type, const size_t 
          * BUFFER DEFAULT DATA: x,y,z,x,y,z,x,y,z,x,y,z....
          */
     case REFRACTAL_VERTEX_BUFFER: {
-        float *cast = static_cast<float *>(data);
+        float *cast = (float*)malloc(buffer_size * sizeof(float));
+        memcpy(cast,data,buffer_size * sizeof(float));
         std::vector<glm::vec4> v_data;
         v_data.resize(buffer_size / 3);
         {
@@ -136,6 +137,7 @@ void Renderer::transferData(const uint64_t id, const uint8_t type, const size_t 
                 buffers[id].mesh.original_vertices[i++] = RefractalTriangle(p0, p1, p2);
             }
         }
+        free(cast);
     }
     break;
     default:
