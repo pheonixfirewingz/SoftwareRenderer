@@ -5,7 +5,7 @@
 #include <render/Ray.hpp>
 class Camera
 {
-    //temp
+    // temp
     friend App;
     //----
     glm::vec3 position;
@@ -13,7 +13,7 @@ class Camera
 
   public:
     Camera()
-        : position(0.5,2.5, -3)
+        : position(0, 2, -10)
         , rotation(0, 0, 0)
     {
     }
@@ -21,17 +21,17 @@ class Camera
     void update(App *app)
     {
         if (app->IsKeyDown(GLFW_KEY_W))
-            position.z += 0.1f;
-        if (app->IsKeyDown(GLFW_KEY_S))
             position.z -= 0.1f;
-        if (app->IsKeyDown(GLFW_KEY_A))
-            position.x += 0.1f;
+        if (app->IsKeyDown(GLFW_KEY_S))
+            position.z += 0.1f;
         if (app->IsKeyDown(GLFW_KEY_D))
+            position.x += 0.1f;
+        if (app->IsKeyDown(GLFW_KEY_A))
             position.x -= 0.1f;
         if (app->IsKeyDown(GLFW_KEY_SPACE))
-            position.y -= 0.1f;
-        if (app->IsKeyDown(GLFW_KEY_LEFT_SHIFT))
             position.y += 0.1f;
+        if (app->IsKeyDown(GLFW_KEY_LEFT_SHIFT))
+            position.y -= 0.1f;
     }
 
     glm::vec3 getRot() const noexcept

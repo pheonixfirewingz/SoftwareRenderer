@@ -70,8 +70,8 @@ class TestApp : public App
         std::vector<vertex> mesh = parseObj(ROOT_PATH "/dependances/box.obj");
         renderer->transferData(mesh_id, REFRACTAL_VERTEX_BUFFER, REFRACTAL_VERTEX_FORMAT_XYZ_UV,
                                mesh.size() * sizeof(vertex), (void *)mesh.data());
-        renderer->setLightPosition(light_id, {0, 3, -3});
-        renderer->setMeshRotation(mesh_id, {0, glm::radians(180.f), 0});
+        renderer->setLightPosition(light_id, {0, 0, 0});
+        renderer->setMeshRotation(mesh_id, {0, glm::radians(180.0f), 0});
         cam.update(this);
     }
 
@@ -97,8 +97,8 @@ class TestApp : public App
     const void *render(int, int) final override
     {
         cam.update(this);
-        renderer->setViewportRotation(0, cam.getRot());
         renderer->setViewportPosition(0, cam.getPos());
+        renderer->setMeshRotation(mesh_id,{0,0,0});
         renderer->render();
         return renderer->getScreenData();
     }

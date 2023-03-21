@@ -1,38 +1,9 @@
 #pragma once
-#include <atomic>
 #include <cstdint>
 #include <render/Camera.hpp>
 #include <render/Ray.hpp>
 #include <util/Sse3.h>
 #include <vector>
-
-struct RefractalTriangle
-{
-    glm::vec3 point_0{0.f, 0.f, 0.f};
-    glm::vec2 point_0_uv{0.f, 0.f};
-    glm::vec3 point_1{0.f, 0.f, 0.f};
-    glm::vec2 point_1_uv{0.f, 0.f};
-    glm::vec3 point_2{0.f, 0.f, 0.f};
-    glm::vec2 point_2_uv{0.f, 0.f};
-    RefractalTriangle() = default;
-    RefractalTriangle(glm::vec3 point_0_in, glm::vec3 point_1_in, glm::vec3 point_2_in, bool normalize = true)
-        : point_0(normalize ? glm::normalize(point_0_in) : point_0_in)
-        , point_1(normalize ? glm::normalize(point_1_in) : point_1_in)
-        , point_2(normalize ? glm::normalize(point_2_in) : point_2_in)
-    {
-    }
-
-    RefractalTriangle(glm::vec3 point_0_in, glm::vec3 point_1_in, glm::vec3 point_2_in, glm::vec2 point_0_uv_in,
-                      glm::vec2 point_1_uv_in, glm::vec2 point_2_uv_in, bool normalize = true)
-        : point_0(normalize ? glm::normalize(point_0_in) : point_0_in)
-        , point_1(normalize ? glm::normalize(point_1_in) : point_1_in)
-        , point_2(normalize ? glm::normalize(point_2_in) : point_2_in)
-        , point_0_uv(point_0_uv_in)
-        , point_1_uv(point_1_uv_in)
-        , point_2_uv(point_2_uv_in)
-    {
-    }
-};
 
 #define REFRACTAL_MAX_LIGHTS 0x01
 #define REFRACTAL_MAX_MESH 0x01
@@ -53,12 +24,12 @@ class Renderer
     uint32_t internal_height;
     glm::mat4 proj;
     glm::vec3 viewport_position{0.f, 0.f, 0.f};
-    glm::vec3 viewport_rotation{0.f, 1.f, 0.f};
+    glm::vec3 viewport_rotation{0.f, 0.f, 0.f};
     glm::uvec3 base_colour{0, 55, 55};
 
     struct LightRegister
     {
-        float luminace = 1.0f;
+        float luminance = 1.0f;
         glm::vec3 colour{1.0f, 1.0f, 1.0f};
         glm::vec3 position{0.0f, 0.0f, 0.0f};
         glm::vec3 rotation{0.0f, 0.0f, 0.0f};
@@ -71,7 +42,7 @@ class Renderer
 
         void free()
         {
-            luminace = 1.0f;
+            luminance = 1.0f;
             colour = {1.0f, 1.0f, 1.0f};
             position = {0.0f, 0.0f, 0.0f};
             rotation = {0.0f, 0.0f, 0.0f};
@@ -87,6 +58,7 @@ class Renderer
         glm::vec3 position{0, 0, 0};
         glm::vec3 rotation{0, 0, 0};
         bool hasHit(const Ray &ray, RayHitInfomation &info) noexcept;
+        bool hasHit(const Ray &ray) noexcept;
         bool is_free = true;
 
         void set()
@@ -129,7 +101,7 @@ class Renderer
     uint64_t genLight();
     void setLightLuminance(const uint64_t id, const float luminance) noexcept
     {
-        lights[id].luminace = luminance;
+        lights[id].luminance = luminance;
     }
 
     void setLightColour(const uint64_t id, const glm::vec3 colour) noexcept
