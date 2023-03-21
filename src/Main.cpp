@@ -17,9 +17,21 @@
 #include <future>
 #include <imgui.h>
 
-static std::vector<glm::vec3> parseObj(const char *path)
+struct vertex
 {
-    std::vector<glm::vec3> vertices;
+    glm::vec3 pos;
+    float u, v;
+    vertex(glm::vec3 pos_in, float u_in, float v_in)
+        : pos(pos_in)
+        , u(u_in)
+        , v(v_in)
+    {
+    }
+};
+
+static std::vector<vertex> parseObj(const char *path)
+{
+    std::vector<vertex> vertices;
     objl::Loader Loader;
     if (!Loader.LoadFile(path))
         throw std::runtime_error(std::string("couldn't load file ") + path);
@@ -27,8 +39,10 @@ static std::vector<glm::vec3> parseObj(const char *path)
     {
         objl::Mesh curMesh = Loader.LoadedMeshes[i];
         for (size_t j = 0; j < curMesh.Vertices.size(); j++)
-            vertices.push_back(glm::vec3(curMesh.Vertices[j].Position.X, curMesh.Vertices[j].Position.Y,
-                                         curMesh.Vertices[j].Position.Z));
+            vertices.push_back(vertex(glm::vec3(curMesh.Vertices[j].Position.X, curMesh.Vertices[j].Position.Y,
+                                                curMesh.Vertices[j].Position.Z),
+                                      curMesh.Vertices[j].TextureCoordinate.X,
+                                      curMesh.Vertices[j].TextureCoordinate.Y));
     }
     return vertices;
 }
@@ -51,12 +65,13 @@ class TestApp : public App
   protected:
     void init(int, int) final override
     {
-        light_id = renderer->genLight({1, 1, 1, 1});
+        light_id = renderer->genLight();
         mesh_id = renderer->genMesh();
-        std::vector<glm::vec3> mesh = parseObj(ROOT_PATH "/dependances/sponza.obj");
-        renderer->transferData(mesh_id, REFRACTAL_VERTEX_BUFFER, mesh.size() * 3, (void *)mesh.data());
-        renderer->setMeshPosition(mesh_id, {0, 0, 0});
-        renderer->setMeshRotation(mesh_id, {0, 0, 0});
+        std::vector<vertex> mesh = parseObj(ROOT_PATH "/dependances/box.obj");
+        renderer->transferData(mesh_id, REFRACTAL_VERTEX_BUFFER, REFRACTAL_VERTEX_FORMAT_XYZ_UV,
+                               mesh.size() * sizeof(vertex), (void *)mesh.data());
+        renderer->setLightPosition(light_id, {0, 3, -3});
+        renderer->setMeshRotation(mesh_id, {0, glm::radians(180.f), 0});
         cam.update(this);
     }
 
@@ -84,7 +99,7 @@ class TestApp : public App
         cam.update(this);
         renderer->setViewportRotation(0, cam.getRot());
         renderer->setViewportPosition(0, cam.getPos());
-        static std::thread k([this]() { renderer->render(); });
+        renderer->render();
         return renderer->getScreenData();
     }
 

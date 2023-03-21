@@ -1,31 +1,20 @@
 #pragma once
 #include <util/Math.hpp>
-class Ray
+struct Ray
 {
-    glm::vec3 _src;
-    glm::vec3 _dir;
-
-  public:
+    glm::vec3 src;
+    glm::vec3 dir;
     Ray() = default;
-    Ray(const glm::vec3 &src, const glm::vec3 &dir)
-        : _src(src)
-        , _dir(dir)
+    Ray(const glm::vec3 &src_in, const glm::vec3 &dir_in)
+        : src(src_in)
+        , dir(dir_in)
     {
-    }
-    glm::vec3 origin() const noexcept
-    {
-        return _src;
-    }
-    glm::vec3 dir() const noexcept
-    {
-        return _dir;
     }
 };
 
 struct RayHitInfomation
 {
+    size_t triangle_index = 0;
     float distance = std::numeric_limits<float>::max();
-    glm::vec2 barry_pos = {0, 0};
-    // temp
-    glm::vec3 colour{0, 0, 0};
+    glm::vec3 intersection_point;
 };

@@ -13,7 +13,7 @@ class Camera
 
   public:
     Camera()
-        : position(-2,3, -3)
+        : position(0.5,2.5, -3)
         , rotation(0, 0, 0)
     {
     }
@@ -21,17 +21,17 @@ class Camera
     void update(App *app)
     {
         if (app->IsKeyDown(GLFW_KEY_W))
-            position.z -= 0.1f;
-        if (app->IsKeyDown(GLFW_KEY_S))
             position.z += 0.1f;
+        if (app->IsKeyDown(GLFW_KEY_S))
+            position.z -= 0.1f;
         if (app->IsKeyDown(GLFW_KEY_A))
-            position.x -= 0.1f;
-        if (app->IsKeyDown(GLFW_KEY_D))
             position.x += 0.1f;
+        if (app->IsKeyDown(GLFW_KEY_D))
+            position.x -= 0.1f;
         if (app->IsKeyDown(GLFW_KEY_SPACE))
-            position.y += 0.1f;
-        if (app->IsKeyDown(GLFW_KEY_LEFT_SHIFT))
             position.y -= 0.1f;
+        if (app->IsKeyDown(GLFW_KEY_LEFT_SHIFT))
+            position.y += 0.1f;
     }
 
     glm::vec3 getRot() const noexcept

@@ -11,67 +11,33 @@
 #include <util/Math.hpp>
 #include <util/Util.hpp>
 
-Renderer::~Renderer()
-{
-    delete screen_data;
-}
-
 Renderer::Renderer(int width, int height)
     : internal_width(width)
     , internal_height(height)
 {
+    proj = glm::perspective(glm::radians(90.0f), float(width) / float(height), 0.1f, 100.0f);
     screen_data = new Pixel[width * height];
 }
 
 void Renderer::resizeScreen(int width, int height)
 {
+    proj = glm::perspective(glm::radians(90.0f), float(width) / float(height), 0.1f, 100.0f);
     screen_data =
         static_cast<Pixel *>(realloc(screen_data, static_cast<size_t>(internal_width = width) *
                                                       static_cast<size_t>(internal_height = height) * sizeof(Pixel)));
 }
 
-void Renderer::setViewportPosition(const uint64_t, glm::vec3 position)
+uint64_t Renderer::genLight()
 {
-    viewport_position = position;
-}
-
-void Renderer::setViewportRotation(const uint64_t, glm::vec3 rotation)
-{
-    viewport_rotation = rotation;
-}
-
-uint64_t Renderer::genLight(glm::vec4 colour)
-{
-#ifdef ON_WINDOWS
-    for (int64_t i = 0; i < REFRACTAL_MAX_LIGHTS; i++)
-#else
-    for (size_t i = 0; i < REFRACTAL_MAX_LIGHTS; i++)
-#endif //  ON_WINDOWS
+    for (uint64_t i = 0; i < REFRACTAL_MAX_LIGHTS; i++)
     {
         if (lights[i].is_free)
         {
-            lights[i].is_free = false;
-            lights[i].light.setColour(colour);
+            lights[i].set();
             return i;
         }
     }
     return REFRACTAL_MAX_LIGHTS;
-}
-
-void Renderer::setLightPosition(const uint64_t id, glm::vec3 position)
-{
-    lights[id].light.setPosition(position);
-}
-
-void Renderer::setLightRotation(const uint64_t id, glm::vec4 rotation)
-{
-    lights[id].light.setRotation(rotation);
-}
-
-void Renderer::destroyLight(const uint64_t id)
-{
-    lights[id].is_free = true;
-    lights[id].light.reset();
 }
 
 uint64_t Renderer::genMesh()
@@ -87,139 +53,176 @@ uint64_t Renderer::genMesh()
     return REFRACTAL_MAX_MESH;
 }
 
-void Renderer::setMeshPosition(const uint64_t id, glm::vec3 new_position)
+void Renderer::transferData(const uint64_t id, const uint8_t type, const uint8_t format, const size_t buffer_size,
+                            const void *data)
 {
-    buffers[id].mesh.position = new_position;
-    markDirty = true;
-}
-
-void Renderer::setMeshRotation(const uint64_t id, glm::vec3 new_rotation)
-{
-    buffers[id].mesh.rotation = new_rotation;
-    markDirty = true;
-}
-
-void Renderer::transferData(const uint64_t id, const uint8_t type, const size_t buffer_size, void *data)
-{
-    // TODO: add error system
     if (buffer_size == 0)
         return;
 
     switch (type)
     {
-        /*
-         * BUFFER DEFAULT DATA: x,y,z,x,y,z,x,y,z,x,y,z....
-         */
     case REFRACTAL_VERTEX_BUFFER: {
-        float *cast = (float*)malloc(buffer_size * sizeof(float));
-        memcpy(cast,data,buffer_size * sizeof(float));
-        std::vector<glm::vec4> v_data;
-        v_data.resize(buffer_size / 3);
+        size_t num_vertices = buffer_size / getVertexFormatSize(format);
+        switch (format)
         {
-            size_t i = 0;
-            for (size_t buffer_index = 0; buffer_index < buffer_size;)
+        case REFRACTAL_VERTEX_FORMAT_XYZ: {
+            std::vector<glm::vec3> vertices;
+            const float *buffer_data = static_cast<const float *>(data);
+            for (size_t i = 0; i < num_vertices; i++)
             {
-                float x = *(cast + buffer_index++);
-                float y = *(cast + buffer_index++);
-                float z = *(cast + buffer_index++);
-                v_data[i] = glm::vec4(x, y, z, 1.0f);
-                i++;
+                float x = *(buffer_data++);
+                float y = *(buffer_data++);
+                float z = *(buffer_data++);
+                vertices.push_back(glm::vec4(x, y, z, 1.0f));
             }
-        }
-        buffers[id].mesh.original_vertices.resize(v_data.size() / 3);
-        {
-            size_t i = 0;
-            for (size_t buffer_index = 0; buffer_index < v_data.size();)
+
+            buffers[id].original_vertices.resize(num_vertices / 3);
+            for (size_t i = 0, j = 0; i < num_vertices; i += 3, j++)
             {
-                glm::vec4 p0 = *(v_data.data() + buffer_index++);
-                glm::vec4 p1 = *(v_data.data() + buffer_index++);
-                glm::vec4 p2 = *(v_data.data() + buffer_index++);
-                buffers[id].mesh.original_vertices[i++] = RefractalTriangle(p0, p1, p2);
+                buffers[id].original_vertices[j] =
+                    RefractalTriangle(vertices[i], vertices[i + 1], vertices[i + 2], false);
             }
+            break;
         }
-        free(cast);
+        case REFRACTAL_VERTEX_FORMAT_XYZ_UV: {
+            std::vector<glm::vec3> vertices;
+            std::vector<glm::vec2> uvs;
+            const float *buffer_data = static_cast<const float *>(data);
+            for (size_t i = 0; i < num_vertices; i++)
+            {
+                float x = *(buffer_data++);
+                float y = *(buffer_data++);
+                float z = *(buffer_data++);
+                float u = *(buffer_data++);
+                float v = *(buffer_data++);
+                vertices.push_back(glm::vec3(x, y, z));
+                uvs.push_back(glm::vec2(u, v));
+            }
+
+            buffers[id].original_vertices.resize(num_vertices / 3);
+            for (size_t i = 0, j = 0; i < num_vertices; i += 3, j++)
+            {
+                buffers[id].original_vertices[j] = RefractalTriangle(vertices[i], vertices[i + 1], vertices[i + 2],
+                                                                     uvs[i], uvs[i + 1], uvs[i + 2], false);
+            }
+            break;
+        }
+        // add cases for other formats as needed
+        default:
+            break;
+        }
+        break;
     }
-    break;
+    // add cases for other buffer types as needed
     default:
         break;
     }
-    markDirty = true;
 }
 
-void Renderer::destroyMesh(const uint64_t id)
+size_t Renderer::getVertexFormatSize(const uint8_t format) const noexcept
 {
-    buffers[id].free();
-}
-
-void Renderer::processPixel(const uint64_t x, const uint64_t y)
-{
-    glm::vec2 coord = glm::vec2((float)x / (float)internal_width, (float)y / (float)internal_height) * 2.0f - 1.0f;
-    glm::vec3 colour(0, 0, 0);
-
-    for (size_t i = 0; i < REFRACTAL_MAX_MESH; ++i)
+    switch (format)
     {
-        MeshRegister &mesh = buffers[i];
-        Ray ray(viewport_position, glm::vec3(coord.x + viewport_rotation.x, coord.y + viewport_rotation.y, -1.0f));
-        if (mesh.is_free)
-            continue;
-        RayHitInfomation info{};
-        if (mesh.mesh.hasHit(ray, info))
-        {
-            colour += info.colour;
-            break;
-        }
+    case REFRACTAL_VERTEX_FORMAT_XYZ:
+        return sizeof(float) * 3;
+    case REFRACTAL_VERTEX_FORMAT_XYZ_UV:
+        return sizeof(float) * 5;
+    // add cases for other formats as needed
+    default:
+        return 0;
     }
-        screen_data[x + y * internal_width] =
-            Pixel(uint8_t(std::clamp(colour.r, 0.f, 1.f) * 255.0f), uint8_t(std::clamp(colour.g, 0.f, 1.f) * 255.0f),
-                  uint8_t(std::clamp(colour.b, 0.f, 1.f) * 255.0f), 255);
 }
 
 void Renderer::render()
 {
-    if (markDirty)
-    {
-        markDirty = false;
+    //clear buffer to clear screen values
+    for (uint64_t i = 0; i < internal_width * internal_height; i++)
+        screen_data[i] = Pixel(uint8_t(base_colour.r), uint8_t(base_colour.g), uint8_t(base_colour.b), 255);
+
+   //calculate cam matrix
+    glm::vec3 forward =
+        glm::rotate(glm::quat(glm::vec3(glm::radians(viewport_rotation.y), glm::radians(viewport_rotation.x),
+                                        glm::radians(viewport_rotation.z))),
+                    glm::vec3(0.0f, 0.0f, -1.0f));
+    glm::mat4 view = glm::lookAt(viewport_position, viewport_position + forward, glm::vec3(0, 1, 0));
 #ifdef _OPENMP
 #    pragma omp parallel for
 #endif
 #ifdef ON_WINDOWS
-        for (int64_t i = 0; i < REFRACTAL_MAX_MESH; i++)
+    for (int64_t i = 0; i < REFRACTAL_MAX_MESH; i++)
 #else
-        for (size_t i = 0; i < REFRACTAL_MAX_MESH; i++)
+    for (size_t i = 0; i < REFRACTAL_MAX_MESH; i++)
 #endif //  ON_WINDOWS
+    {
+        if (buffers[i].is_free)
+            continue;
+        //transform vertex from model space to world space this assumes that model data is normalized to between -1.0 & 1.0
+        buffers[i].vertices.clear();
+        buffers[i].vertices.reserve(buffers[i].original_vertices.size());
+        for (size_t j = 0; j < buffers[i].original_vertices.size(); j++)
         {
-            if (buffers[i].is_free)
-                continue;
+            //calculate the model matrix
+            glm::mat4 transform = glm::mat4_cast(glm::quat(glm::vec4(buffers[i].rotation, 1.0f)));
+            transform *= glm::translate(glm::mat4(1.0f), buffers[i].position);
+            transform = glm::scale(transform, glm::vec3(1.f));
 
-            buffers[i].mesh.vertices.clear();
-            buffers[i].mesh.vertices.reserve(buffers[i].mesh.original_vertices.size());
-            // Scale the vertices by the maximum coordinate value
-#ifdef ON_WINDOWS
-            for (int64_t j = 0; j < int64_t(buffers[i].mesh.original_vertices.size()); j++)
-#else
-            for (size_t j = 0; j < buffers[i].mesh.original_vertices.size(); j++)
-#endif
-            {
-                glm::mat4 transform = glm::mat4_cast(glm::quat(glm::vec4(buffers[i].mesh.rotation, 1.0f)));
-                transform *= glm::translate(glm::mat4(1.0f), buffers[i].mesh.position);
-                transform = glm::scale(transform, glm::vec3(.5f));
+            //GLSL equivent:  gl_Position = projection * view * model * vec4(aPos, 1.0f);
+            glm::vec4 point_0 = proj * view * transform * glm::vec4(buffers[i].original_vertices[j].point_0, 1.0f);
+            glm::vec4 point_1 = proj * view * transform * glm::vec4(buffers[i].original_vertices[j].point_1, 1.0f);
+            glm::vec4 point_2 = proj * view * transform * glm::vec4(buffers[i].original_vertices[j].point_2, 1.0f);
 
-                glm::vec4 point_0 =  transform * buffers[i].mesh.original_vertices[j].point_0;
-                glm::vec4 point_1 =  transform * buffers[i].mesh.original_vertices[j].point_1;
-                glm::vec4 point_2 = transform * buffers[i].mesh.original_vertices[j].point_2;
-                buffers[i].mesh.vertices.emplace_back(RefractalTriangle(point_0, point_1, point_2,false));
-            }
+            buffers[i].vertices.emplace_back(RefractalTriangle(glm::vec3(point_0.x, point_0.y, point_0.z) / point_0.w,
+                                                               glm::vec3(point_1.x, point_1.y, point_1.z) / point_1.w,
+                                                               glm::vec3(point_2.x, point_2.y, point_2.z) / point_2.w,
+                                                               false));
         }
     }
+
+    //fragment shader stage
 #if defined(_OPENMP)
 #    pragma omp parallel for
 #endif
     for (int64_t y = 0; y < internal_height; y++)
         for (int64_t x = 0; x < internal_width; x++)
-            processPixel(x, y);
+        {
+            // fragment coordinates
+            glm::vec2 coord =
+                glm::vec2((float)x / (float)internal_width, (float)y / (float)internal_height) * 2.0f - 1.0f;
+            // base clour if 4th elememt is set not set to 0 then the pixel data is updated no point updating the buffer
+            // if nothing is there to add to the image
+            glm::vec4 colour(0, 0, 0, 0);
+            // path trace to get pixel colour of the scene
+
+
+            //Note: the final colour needs to be between 0.0 and 1.0 to be able to format it to the correct colour range correctly
+            if (colour.a != 0)
+                screen_data[x + y * internal_width] = Pixel(uint8_t(colour.r * 255.0f), uint8_t(colour.g * 255.0f),
+                                                            uint8_t(colour.b * 255.0f), uint8_t(colour.a * 255.0f));
+        }
 }
 
-const void *Renderer::getScreenData() noexcept
+bool Renderer::MeshRegister::hasHit(const Ray &ray, RayHitInfomation &info) noexcept
 {
-    return (const void *)screen_data;
+    bool hit_tri = false;
+    size_t triangles_size = vertices.size();
+    for (size_t i = triangles_size - 1; i != 0; --i)
+    {
+        float distance = 0;
+        glm::vec2 barry;
+        if (glm::intersectRayTriangle(ray.src, ray.dir, vertices[i].point_0, vertices[i].point_1, vertices[i].point_2,
+                                      barry, distance))
+        {
+            if (distance < info.distance)
+            {
+                hit_tri = true;
+                info.triangle_index = i;
+                info.distance = distance;
+                glm::vec3 p0 = vertices[i].point_0;
+                glm::vec3 p1 = vertices[i].point_1;
+                glm::vec3 p2 = vertices[i].point_2;
+                info.intersection_point = p0 + barry.x * (p1 - p0) + barry.y * (p2 - p0);
+            }
+        }
+    }
+    return hit_tri;
 }
