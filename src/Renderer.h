@@ -31,6 +31,7 @@ class Renderer
     {
         float luminance = 1.0f;
         glm::vec3 colour{1.0f, 1.0f, 1.0f};
+        glm::vec3 user_position{0, 0, 0};
         glm::vec3 position{0.0f, 0.0f, 0.0f};
         glm::vec3 rotation{0.0f, 0.0f, 0.0f};
         bool is_free = true;
@@ -58,7 +59,7 @@ class Renderer
         glm::vec3 position{0, 0, 0};
         glm::vec3 rotation{0, 0, 0};
         bool hasHit(const Ray &ray, RayHitInfomation &info) noexcept;
-        bool hasHit(const Ray &ray) noexcept;
+        bool isBlocked(const Ray &ray, const size_t test_triangle_index) noexcept;
         bool is_free = true;
 
         void set()
@@ -78,7 +79,6 @@ class Renderer
 
   protected:
     size_t getVertexFormatSize(const uint8_t format) const noexcept;
-
   public:
     Renderer(int width, int height);
     ~Renderer()
@@ -109,12 +109,12 @@ class Renderer
         lights[id].colour = colour;
     }
 
-    void setLightPosition(const uint64_t id, glm::vec3 position) noexcept
+    void setLightPosition(const uint64_t id, const glm::vec3 position) noexcept
     {
-        lights[id].position = position;
+        lights[id].user_position = position;
     }
 
-    void setLightRotation(const uint64_t id, glm::vec4 rotation) noexcept
+    void setLightRotation(const uint64_t id, const glm::vec3 rotation) noexcept
     {
         lights[id].rotation = rotation;
     }
