@@ -31,7 +31,6 @@ class Renderer
     {
         float luminance = 1.0f;
         glm::vec3 colour{1.0f, 1.0f, 1.0f};
-        glm::vec3 user_position{0, 0, 0};
         glm::vec3 position{0.0f, 0.0f, 0.0f};
         glm::vec3 rotation{0.0f, 0.0f, 0.0f};
         bool is_free = true;
@@ -111,7 +110,7 @@ class Renderer
 
     void setLightPosition(const uint64_t id, const glm::vec3 position) noexcept
     {
-        lights[id].user_position = position;
+        lights[id].position = position;
     }
 
     void setLightRotation(const uint64_t id, const glm::vec3 rotation) noexcept

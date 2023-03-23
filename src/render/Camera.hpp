@@ -13,7 +13,7 @@ class Camera
 
   public:
     Camera()
-        : position(0, 2, -10)
+        : position(0, 0, 0)
         , rotation(0, 0, 0)
     {
     }
@@ -21,9 +21,9 @@ class Camera
     void update(App *app)
     {
         if (app->IsKeyDown(GLFW_KEY_W))
-            position.z -= 0.1f;
-        if (app->IsKeyDown(GLFW_KEY_S))
             position.z += 0.1f;
+        if (app->IsKeyDown(GLFW_KEY_S))
+            position.z -= 0.1f;
         if (app->IsKeyDown(GLFW_KEY_D))
             position.x += 0.1f;
         if (app->IsKeyDown(GLFW_KEY_A))

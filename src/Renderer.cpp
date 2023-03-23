@@ -177,24 +177,8 @@ void Renderer::render()
                                       glm::vec3(point_2.x, point_2.y, point_2.z) / point_2.w, false));
             }
         }
-
-#ifdef _OPENMP
-#    pragma omp parallel for
-#endif
-        for (int64_t i = 0; i < REFRACTAL_MAX_LIGHTS; i++)
-        {
-            if (lights[i].is_free)
-                continue;
-            glm::mat4 transform = glm::mat4(1.0f);
-            transform = glm::rotate(transform, glm::radians(lights[i].rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-            transform = glm::rotate(transform, glm::radians(lights[i].rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-            transform = glm::rotate(transform, glm::radians(lights[i].rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-            transform = glm::translate(transform, lights[i].user_position);
-            glm::vec4 point = proj * view * transform * glm::vec4(lights[i].user_position, 1.0f);
-            lights[i].position = glm::vec3(point.x, point.y, point.z) / point.w;
-        }
     }
-    // fragment shader stage
+// fragment shader stage
 #if defined(_OPENMP)
 #    pragma omp parallel for
 #endif
@@ -227,8 +211,8 @@ void Renderer::render()
             }
             /* path trace to get pixel colour of the scene
                 if an intersection was found, calculate pixel colour by casting ray from non free LightRegisters if
-               they hit the triangle in info without anything obstructions we need to add the light colour depending on
-               the rays distance between the intersection and the light origin
+               they hit the triangle in info without anything obstructions we need to add the light colour depending
+               on the rays distance between the intersection and the light origin
             */
             if (found)
             {
@@ -237,24 +221,15 @@ void Renderer::render()
                 {
                     if (light.is_free)
                         continue;
-                    // loop through lights in the scene
-                    bool obstructed = false;
                     // cast ray from light origin to intersection point
                     Ray light_ray(light.position, ray.src + (std::abs(info.distance) * ray.dir));
                     if (mesh_hit.isBlocked(light_ray, info.index))
-                    {
-                        obstructed = true;
                         break;
-                    }
-
-                    if (!obstructed)
-                    {
-                        // if no obstructions between light and intersection point
-                        // calculate distance between light origin and intersection point
-                        glm::vec3 light_colour = light.colour / (info.distance / light.luminance);
-                        float dif = glm::clamp(glm::dot(info.normal, light_colour), 0.f, 1.f);
-                        colour += glm::vec3(dif); // add light to pixel colour at intersection point
-                    }
+                    // if no obstructions between light and intersection point
+                    // calculate distance between light origin and intersection point
+                    glm::vec3 light_colour = light.colour / (info.distance / light.luminance);
+                    float dif = glm::clamp(glm::dot(info.normal, light_colour), 0.f, 1.f);
+                    colour += glm::vec3(dif); // add light to pixel colour at intersection point
                 }
                 // set pixel colour
                 screen_data[x + y * internal_width] =

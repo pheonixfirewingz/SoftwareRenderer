@@ -70,9 +70,9 @@ class TestApp : public App
         std::vector<vertex> mesh = parseObj(ROOT_PATH "/dependances/box.obj");
         renderer->transferData(mesh_id, REFRACTAL_VERTEX_BUFFER, REFRACTAL_VERTEX_FORMAT_XYZ_UV,
                                mesh.size() * sizeof(vertex), (void *)mesh.data());
-        renderer->setMeshPosition(mesh_id, {0, 0,6});
+        renderer->setMeshPosition(mesh_id, {0, -3,-3});
         renderer->setMeshRotation(mesh_id, {0, 180,0});
-        renderer->setLightPosition(light_id, {0, 5,6});
+        renderer->setLightPosition(light_id, {0,0,0});
         renderer->setLightRotation(light_id, {0, 0, -1.0f});
         cam.update(this);
     }
